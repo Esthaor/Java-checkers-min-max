@@ -1,22 +1,26 @@
 package pl.pszty.checkers.core;
 
-import java.util.Arrays;
+import java.util.List;
 import pl.pszty.checkers.enums.FieldState;
+import pl.pszty.checkers.enums.Player;
 
 /**
  *
  * @author Grzegorz Majchrzak
  * @date 2016-01-08 16:56:56
  *
- * Representation of the board, not actual gameboard
+ * white player attacks to lower rows black player attacks to higher rows
+ *
  */
 public class Board {
 
     private FieldState board[][];
+    private Player activePlayer;
 
     public Board() {
         this.board = new FieldState[8][8];
         this.setBoard();
+        activePlayer = Player.white;
     }
 
     /**
@@ -79,6 +83,59 @@ public class Board {
             }
             System.out.print("\n");
         }
+    }
+
+    /**
+     * @param move
+     * @return true if movement was correct and performed, false if movement was
+     * incorrect
+     */
+    public boolean performMovement(Move move) {
+
+        int fromColumn = move.getFromColumn();
+        int fromRow = move.getFromRow();
+        int toColumn = move.getToColumn();
+        int toRow = move.getToRow();
+
+        if (!this.isMoveValid(move)) {
+            return false;
+        }
+
+        this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
+        this.board[fromRow][fromColumn] = FieldState.empty;
+        
+        // TODO: remove dead pawn if there is any
+        
+        return true;
+    }
+
+    private boolean isMoveValid(Move move) {
+        int fromColumn = move.getFromColumn();
+        int fromRow = move.getFromRow();
+
+        if (this.board[fromRow][fromColumn].equals(FieldState.empty)) {
+            return false;
+        }
+        if (this.activePlayer.equals(Player.black)
+                && (this.board[fromRow][fromColumn].equals(FieldState.blackPawn)
+                || this.board[fromRow][fromColumn].equals(FieldState.blackQueen))) {
+            return false;
+        }
+        if (this.activePlayer.equals(Player.white)
+                && (this.board[fromRow][fromColumn].equals(FieldState.whitePawn)
+                || this.board[fromRow][fromColumn].equals(FieldState.whiteQueen))) {
+            return false;
+        }
+
+        int toColumn = move.getToColumn();
+        int toRow = move.getToRow();
+
+        if (!this.board[toRow][toColumn].equals(FieldState.empty)) {
+            return false;
+        }
+
+        // TODO: more checking
+        return true;
     }
 
     public FieldState[][] getBoard() {
