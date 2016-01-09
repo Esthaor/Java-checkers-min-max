@@ -105,6 +105,7 @@ public class Board {
         this.board[fromRow][fromColumn] = FieldState.empty;
         
         // TODO: remove dead pawn if there is any
+        // pawn to pion
         
         return true;
     }
