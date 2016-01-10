@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pszty;
+package temp;
+
+import pl.pszty.checkers.core.Board;
 
 /**
  *
@@ -15,7 +17,8 @@ public class PSZTY {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        System.out.println("LoL2");
+        Board board = new Board();
+        board.displayBoard();
     }
-    
+
 }
