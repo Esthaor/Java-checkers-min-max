@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import pl.pszty.checkers.enums.FieldState;
+import pl.pszty.checkers.enums.Player;
 
 /**
  *
@@ -40,6 +41,7 @@ public class BoardTest {
 
     @Test
     public void testSettingNewBoard() {
+        System.out.println("Test setting board");
         Board board = new Board();
         FieldState[][] testedBoard = board.getBoard();
 
@@ -60,4 +62,51 @@ public class BoardTest {
         }
     }
 
+    @Test
+    public void testNormalPawnMove() {
+        System.out.println("Test normal moves");
+
+        Board board = new Board();
+        Move move = new Move();
+
+        try {
+            move.setFrom(5, 0);
+            move.setTo(4, 1);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+
+        FieldState[][] boardStates = board.getBoard();
+        Player activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[5][0], FieldState.empty);
+        assertEquals(boardStates[4][1], FieldState.whitePawn);
+        assertEquals(activePlayer, Player.black);
+
+        try {
+            move.setFrom(2, 1);
+            move.setTo(3, 3);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+        boardStates = board.getBoard();
+        activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[2][1], FieldState.blackPawn);
+        assertEquals(boardStates[3][3], FieldState.empty);
+        assertEquals(activePlayer, Player.black);
+
+        try {
+            move.setFrom(2, 1);
+            move.setTo(3, 2);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+        boardStates = board.getBoard();
+        activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[2][1], FieldState.empty);
+        assertEquals(boardStates[3][2], FieldState.blackPawn);
+        assertEquals(activePlayer, Player.white);
+    }
 }

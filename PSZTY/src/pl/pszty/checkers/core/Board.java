@@ -101,12 +101,39 @@ public class Board {
             return false;
         }
 
-        this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
-        this.board[fromRow][fromColumn] = FieldState.empty;
-        
-        // TODO: remove dead pawn if there is any
-        
-        return true;
+        // Tutaj wiemy, że ruszamy dobrym pionem/damką na puste pole
+        // Normal pawn move
+        if (this.board[fromRow][fromColumn].equals(FieldState.blackPawn)
+                || this.board[fromRow][fromColumn].equals(FieldState.whitePawn)) {
+
+            // Normal move without beating
+            // Dodać return false. jeżeli wykryto możliwość bicia
+            if ((fromColumn + 1 == toColumn) || (fromColumn - 1 == toColumn)) {
+
+                switch (this.activePlayer) {
+                    case black:
+                        if (fromRow + 1 != toRow) {
+                            return false;
+                        }
+                        this.activePlayer = Player.white;
+                        break;
+                    case white:
+                        if (fromRow - 1 != toRow) {
+                            return false;
+                        }
+                        this.activePlayer = Player.black;
+                        break;
+
+                }
+                this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
+                this.board[fromRow][fromColumn] = FieldState.empty;
+                return true;
+            }
+        }
+
+        // this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
+        // this.board[fromRow][fromColumn] = FieldState.empty;
+        return false;
     }
 
     private boolean isMoveValid(Move move) {
@@ -116,12 +143,12 @@ public class Board {
         if (this.board[fromRow][fromColumn].equals(FieldState.empty)) {
             return false;
         }
-        if (this.activePlayer.equals(Player.black)
+        if (this.activePlayer.equals(Player.white)
                 && (this.board[fromRow][fromColumn].equals(FieldState.blackPawn)
                 || this.board[fromRow][fromColumn].equals(FieldState.blackQueen))) {
             return false;
         }
-        if (this.activePlayer.equals(Player.white)
+        if (this.activePlayer.equals(Player.black)
                 && (this.board[fromRow][fromColumn].equals(FieldState.whitePawn)
                 || this.board[fromRow][fromColumn].equals(FieldState.whiteQueen))) {
             return false;
@@ -130,15 +157,14 @@ public class Board {
         int toColumn = move.getToColumn();
         int toRow = move.getToRow();
 
-        if (!this.board[toRow][toColumn].equals(FieldState.empty)) {
-            return false;
-        }
-
-        // TODO: more checking
-        return true;
+        return this.board[toRow][toColumn].equals(FieldState.empty);
     }
 
     public FieldState[][] getBoard() {
         return board;
+    }
+
+    public Player getActivePlayer() {
+        return activePlayer;
     }
 }
