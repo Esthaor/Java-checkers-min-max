@@ -1,6 +1,5 @@
 package pl.pszty.checkers.core;
 
-import java.util.List;
 import pl.pszty.checkers.enums.FieldState;
 import pl.pszty.checkers.enums.Player;
 
@@ -16,6 +15,7 @@ public class Board {
 
     private FieldState board[][];
     private Player activePlayer;
+    private Move lastMoveIfMultipleBeating;
 
     public Board() {
         this.board = new FieldState[8][8];
@@ -106,9 +106,14 @@ public class Board {
         if (this.board[fromRow][fromColumn].equals(FieldState.blackPawn)
                 || this.board[fromRow][fromColumn].equals(FieldState.whitePawn)) {
 
+            if (wasTherePossibleBeating()) {
+                return false;
+            }
+
             // Normal move without beating
             // Dodać return false. jeżeli wykryto możliwość bicia
-            if ((fromColumn + 1 == toColumn) || (fromColumn - 1 == toColumn)) {
+            if (((fromColumn + 1 == toColumn) || (fromColumn - 1 == toColumn))
+                    && this.lastMoveIfMultipleBeating == null) {
 
                 switch (this.activePlayer) {
                     case black:
@@ -130,9 +135,19 @@ public class Board {
                 return true;
             }
 
-            // Single beating without further options
+            // Beating others by pawn
             if (((fromColumn + 2 == toColumn) || (fromColumn - 2 == toColumn))
                     && ((fromRow + 2 == toRow) || (fromRow - 2 == toRow))) {
+
+                // Check if it is second or so one move in one turn
+                if (this.lastMoveIfMultipleBeating != null) {
+                    int lastColumn = this.lastMoveIfMultipleBeating.getToColumn();
+                    int lastRow = this.lastMoveIfMultipleBeating.getToRow();
+                    if ((lastColumn != fromColumn) || (lastRow != fromRow)) {
+                        return false;
+                    }
+                }
+
                 int betweenRow, betweenColumn;
                 betweenRow = (fromRow + toRow) / 2;
                 betweenColumn = (fromColumn + toColumn) / 2;
@@ -141,14 +156,12 @@ public class Board {
                     case black:
                         if (this.board[betweenRow][betweenColumn].equals(FieldState.whitePawn)
                                 || this.board[betweenRow][betweenColumn].equals(FieldState.whiteQueen)) {
-                            this.activePlayer = Player.white;
                             break;
                         }
                         return false;
                     case white:
                         if (!this.board[betweenRow][betweenColumn].equals(FieldState.blackPawn)
                                 || !this.board[betweenRow][betweenColumn].equals(FieldState.blackQueen)) {
-                            this.activePlayer = Player.black;
                             break;
                         }
                         return false;
@@ -156,6 +169,18 @@ public class Board {
                 this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
                 this.board[fromRow][fromColumn] = FieldState.empty;
                 this.board[betweenRow][betweenColumn] = FieldState.empty;
+
+                if (!canThisPawnBeatMore(toRow, toColumn)) {
+                    if (this.activePlayer.equals(Player.black)) {
+                        this.activePlayer = Player.white;
+                    } else {
+                        this.activePlayer = Player.black;
+                    }
+                    this.lastMoveIfMultipleBeating = null;
+                } else {
+                    this.lastMoveIfMultipleBeating = move;
+                }
+
                 return true;
             }
         }
@@ -193,5 +218,61 @@ public class Board {
 
     public Player getActivePlayer() {
         return activePlayer;
+    }
+
+    private boolean wasTherePossibleBeating() {
+        // TODO : zrobić
+        return false;
+    }
+
+    private boolean canThisPawnBeatMore(int row, int column) {
+        FieldState opositePawn;
+        FieldState opositeQueen;
+
+        if (this.board[row][column].equals(FieldState.blackPawn) || this.board[row][column].equals(FieldState.blackPawn)) {
+            opositePawn = FieldState.whitePawn;
+            opositeQueen = FieldState.whiteQueen;
+        } else {
+            opositePawn = FieldState.blackPawn;
+            opositeQueen = FieldState.blackQueen;
+        }
+
+        if (this.board[row][column].equals(FieldState.empty)) {
+            throw new RuntimeException("This field is empty!");
+        }
+
+        if ((row - 2) >= 0) {
+            if ((column - 2) >= 0) {
+                if (this.board[row - 2][column - 2].equals(FieldState.empty)
+                        && (this.board[row - 1][column - 1].equals(opositePawn)
+                        || (this.board[row - 1][column - 1].equals(opositeQueen)))) {
+                    return true;
+                }
+            }
+            if ((column + 2) < 8) {
+                if (this.board[row - 2][column + 2].equals(FieldState.empty)
+                        && (this.board[row - 1][column + 1].equals(opositePawn)
+                        || (this.board[row - 1][column + 1].equals(opositeQueen)))) {
+                    return true;
+                }
+            }
+        }
+        if ((row + 2) > 7) {
+            if ((column - 2) >= 0) {
+                if (this.board[row + 2][column - 2].equals(FieldState.empty)
+                        && (this.board[row + 1][column - 1].equals(opositePawn)
+                        || (this.board[row + 1][column - 1].equals(opositeQueen)))) {
+                    return true;
+                }
+            }
+            if ((column + 2) < 8) {
+                if (this.board[row + 2][column + 2].equals(FieldState.empty)
+                        && (this.board[row + 1][column + 1].equals(opositePawn)
+                        || (this.board[row + 1][column + 1].equals(opositeQueen)))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
