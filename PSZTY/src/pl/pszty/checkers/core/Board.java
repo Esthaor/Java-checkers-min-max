@@ -215,7 +215,25 @@ public class Board {
                 int i = toRow;
                 int j = toColumn;
                 int modifierX, modifierY;
-                boolean cleanTrack = true;
+                int opponentOnTrack = 0;
+                int opponentRow = 0, opponentColumn = 0;
+                boolean noneOfMineOnTrack = true;
+                FieldState opositePawn;
+                FieldState opositeQueen;
+                FieldState myPawn;
+                FieldState myQueen;
+
+                if (this.activePlayer.equals(Player.black)) {
+                    opositePawn = FieldState.whitePawn;
+                    opositeQueen = FieldState.whiteQueen;
+                    myPawn = FieldState.blackPawn;
+                    myQueen = FieldState.blackQueen;
+                } else {
+                    opositePawn = FieldState.blackPawn;
+                    opositeQueen = FieldState.blackQueen;
+                    myPawn = FieldState.whitePawn;
+                    myQueen = FieldState.whiteQueen;
+                }
 
                 if (toRow > fromRow) {
                     modifierY = -1;
@@ -230,13 +248,23 @@ public class Board {
                 }
 
                 while (i != fromRow) {
-                    if (!this.board[i][j].equals(FieldState.empty)) {
-                        cleanTrack = false;
+                    if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                        noneOfMineOnTrack = false;
+                    }
+                    if (this.board[i][j].equals(opositePawn) || this.board[i][j].equals(opositeQueen)) {
+                        opponentOnTrack++;
+                        opponentRow = i;
+                        opponentColumn = j;
                     }
                     i += modifierY;
                     j += modifierX;
                 }
-                if (cleanTrack) {
+
+                // Clean track, normal move
+                if (noneOfMineOnTrack && (opponentOnTrack == 0)) {
+                    if (wasTherePossibleBeating()) {
+                        return false;
+                    }
                     this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
                     this.board[fromRow][fromColumn] = FieldState.empty;
                     if (this.activePlayer.equals(Player.white)) {
@@ -244,6 +272,26 @@ public class Board {
                     } else {
                         this.activePlayer = Player.white;
                     }
+                    return true;
+                }
+
+                // Only one opponent on track
+                if (noneOfMineOnTrack && (opponentOnTrack == 1)) {
+                    this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
+                    this.board[fromRow][fromColumn] = FieldState.empty;
+                    this.board[opponentRow][opponentColumn] = FieldState.empty;
+
+                    if (!canThisQueenBeatMore(toRow, toColumn)) {
+                        if (this.activePlayer.equals(Player.black)) {
+                            this.activePlayer = Player.white;
+                        } else {
+                            this.activePlayer = Player.black;
+                        }
+                        this.lastMoveIfMultipleBeating = null;
+                    } else {
+                        this.lastMoveIfMultipleBeating = new Move(move);
+                    }
+                    return true;
                 }
             }
         }

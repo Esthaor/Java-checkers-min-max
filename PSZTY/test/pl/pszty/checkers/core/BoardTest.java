@@ -341,7 +341,7 @@ public class BoardTest {
 
         Board board = new Board();
         Move move = new Move();
-        
+
         board.prepereQueenTest();
 
         try {
@@ -357,20 +357,65 @@ public class BoardTest {
         assertEquals(boardStates[2][7], FieldState.empty);
         assertEquals(boardStates[7][2], FieldState.whiteQueen);
         assertEquals(activePlayer, Player.white);
-        
+
         try {
             move.setFrom(7, 4);
             move.setTo(4, 1);
         } catch (Exception e) {
         }
         board.performMovement(move);
-        
+
         boardStates = board.getBoard();
         activePlayer = board.getActivePlayer();
 
-        board.displayBoard();
         assertEquals(boardStates[7][4], FieldState.empty);
         assertEquals(boardStates[4][1], FieldState.whiteQueen);
+        assertEquals(activePlayer, Player.black);
+
+        System.out.println("OK");
+    }
+
+    @Test
+    public void testBeatByQueen() {
+        System.out.println("Test beating queen moves");
+
+        Board board = new Board();
+        Move move = new Move();
+
+        board.prepereQueenTest();
+
+        try {
+            move.setFrom(7, 4);
+            move.setTo(4, 1);
+            board.performMovement(move);
+            move.setFrom(0, 1);
+            move.setTo(1, 0);
+            board.performMovement(move);
+            move.setFrom(4, 1);
+            move.setTo(0, 5);
+            board.performMovement(move);
+        } catch (Exception e) {
+        }
+
+        FieldState[][] boardStates = board.getBoard();
+        Player activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[0][5], FieldState.blackQueen);
+        assertEquals(boardStates[4][1], FieldState.whiteQueen);
+        assertEquals(activePlayer, Player.white);
+
+        try {
+            move.setTo(1, 4);
+            board.performMovement(move);
+        } catch (Exception e) {
+        }
+
+        boardStates = board.getBoard();
+        activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[4][1], FieldState.empty);
+        assertEquals(boardStates[2][3], FieldState.empty);
+        assertEquals(boardStates[1][4], FieldState.whiteQueen);
         assertEquals(activePlayer, Player.black);
         
         System.out.println("OK");
