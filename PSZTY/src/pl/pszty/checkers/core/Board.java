@@ -23,6 +23,13 @@ public class Board {
         activePlayer = Player.white;
     }
 
+    public Board(Board board) {
+        this.activePlayer = board.getActivePlayer();
+        for (int i = 0; i < 8; i++) {
+            System.arraycopy(board.board[i], 0, this.board[i], 0, 8);
+        }
+    }
+
     /**
      * Setting board to beginning game state.
      */
@@ -81,7 +88,7 @@ public class Board {
                     System.out.print("WQ ");
                 }
             }
-            System.out.print("\n");
+            System.out.print("\n\n");
         }
     }
 
