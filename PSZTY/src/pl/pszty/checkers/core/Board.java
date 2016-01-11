@@ -178,7 +178,7 @@ public class Board {
                     }
                     this.lastMoveIfMultipleBeating = null;
                 } else {
-                    this.lastMoveIfMultipleBeating = move;
+                    this.lastMoveIfMultipleBeating = new Move(move);
                 }
 
                 return true;

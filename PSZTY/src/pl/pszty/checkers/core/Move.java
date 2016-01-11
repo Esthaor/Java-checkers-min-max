@@ -14,6 +14,17 @@ public class Move {
     private int toRow;
     private int toColumn;
 
+    public Move() {
+
+    }
+
+    public Move(Move move) {
+        this.fromRow = move.getFromRow();
+        this.fromColumn = move.getFromColumn();
+        this.toRow = move.getToRow();
+        this.toColumn = move.getToColumn();
+    }
+
     public void setFrom(int row, int column) throws Exception {
         if (row < 0 || row > 7 || column < 0 || column > 7) {
             throw new Exception("Move not valid!");
