@@ -182,9 +182,9 @@ public class BoardTest {
             move.setTo(2, 1);
         } catch (Exception e) {
         }
-        
+
         board.performMovement(move);
-        
+
         boardStates = board.getBoard();
         activePlayer = board.getActivePlayer();
 
@@ -192,6 +192,63 @@ public class BoardTest {
         assertEquals(boardStates[3][2], FieldState.empty);
         assertEquals(boardStates[2][1], FieldState.blackPawn);
         assertEquals(activePlayer, Player.white);
-        
+
+        System.out.println("Multiple beat in one turn");
+        try {
+            move.setFrom(5, 0);
+            move.setTo(4, 1);
+            board.performMovement(move);
+            move.setFrom(2, 1);
+            move.setTo(3, 0);
+            board.performMovement(move);
+            move.setFrom(6, 1);
+            move.setTo(5, 2);
+            board.performMovement(move);
+            move.setFrom(2, 5);
+            move.setTo(3, 6);
+            board.performMovement(move);
+            move.setFrom(5, 2);
+            move.setTo(4, 3);
+            board.performMovement(move);
+            move.setFrom(3, 0);
+            move.setTo(5, 2);
+            board.performMovement(move);
+        } catch (Exception e) {
+        }
+        activePlayer = board.getActivePlayer();
+
+        assertEquals(activePlayer, Player.black);
+
+        try {
+            move.setFrom(2, 3);
+            move.setTo(3, 2);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+
+        boardStates = board.getBoard();
+        activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[3][2], FieldState.empty);
+        assertEquals(boardStates[2][3], FieldState.blackPawn);
+        assertEquals(activePlayer, Player.black);
+
+        try {
+            move.setFrom(5, 2);
+            move.setTo(3, 4);
+        } catch (Exception e) {
+        }
+
+        board.performMovement(move);
+
+        boardStates = board.getBoard();
+        activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[3][0], FieldState.empty);
+        assertEquals(boardStates[4][1], FieldState.empty);
+        assertEquals(boardStates[5][2], FieldState.empty);
+        assertEquals(boardStates[4][3], FieldState.empty);
+        assertEquals(boardStates[3][4], FieldState.blackPawn);
+        assertEquals(activePlayer, Player.white);
     }
 }
