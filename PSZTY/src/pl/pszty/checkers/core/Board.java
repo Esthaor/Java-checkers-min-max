@@ -102,7 +102,7 @@ public class Board {
         }
 
         // Tutaj wiemy, że ruszamy dobrym pionem/damką na puste pole
-        // Normal pawn move
+        // Normal pawn moves
         if (this.board[fromRow][fromColumn].equals(FieldState.blackPawn)
                 || this.board[fromRow][fromColumn].equals(FieldState.whitePawn)) {
 
@@ -129,10 +129,37 @@ public class Board {
                 this.board[fromRow][fromColumn] = FieldState.empty;
                 return true;
             }
+
+            // Single beating without further options
+            if (((fromColumn + 2 == toColumn) || (fromColumn - 2 == toColumn))
+                    && ((fromRow + 2 == toRow) || (fromRow - 2 == toRow))) {
+                int betweenRow, betweenColumn;
+                betweenRow = (fromRow + toRow) / 2;
+                betweenColumn = (fromColumn + toColumn) / 2;
+
+                switch (this.activePlayer) {
+                    case black:
+                        if (this.board[betweenRow][betweenColumn].equals(FieldState.whitePawn)
+                                || this.board[betweenRow][betweenColumn].equals(FieldState.whiteQueen)) {
+                            this.activePlayer = Player.white;
+                            break;
+                        }
+                        return false;
+                    case white:
+                        if (!this.board[betweenRow][betweenColumn].equals(FieldState.blackPawn)
+                                || !this.board[betweenRow][betweenColumn].equals(FieldState.blackQueen)) {
+                            this.activePlayer = Player.black;
+                            break;
+                        }
+                        return false;
+                }
+                this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
+                this.board[fromRow][fromColumn] = FieldState.empty;
+                this.board[betweenRow][betweenColumn] = FieldState.empty;
+                return true;
+            }
         }
 
-        // this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
-        // this.board[fromRow][fromColumn] = FieldState.empty;
         return false;
     }
 
