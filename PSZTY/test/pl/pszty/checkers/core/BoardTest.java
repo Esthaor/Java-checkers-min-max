@@ -239,6 +239,7 @@ public class BoardTest {
         } catch (Exception e) {
         }
 
+        
         board.performMovement(move);
 
         boardStates = board.getBoard();
