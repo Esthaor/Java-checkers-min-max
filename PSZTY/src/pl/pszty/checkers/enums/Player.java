@@ -9,5 +9,6 @@ package pl.pszty.checkers.enums;
 public enum Player {
     white,
     black,
-    draw
+    draw,
+    noone
 }
