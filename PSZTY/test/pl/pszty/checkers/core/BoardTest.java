@@ -64,7 +64,7 @@ public class BoardTest {
 
     @Test
     public void testNormalPawnMove() {
-        System.out.println("Test normal moves");
+        System.out.println("Test normal pawn moves");
 
         Board board = new Board();
         Move move = new Move();
@@ -108,5 +108,90 @@ public class BoardTest {
         assertEquals(boardStates[2][1], FieldState.empty);
         assertEquals(boardStates[3][2], FieldState.blackPawn);
         assertEquals(activePlayer, Player.white);
+
+        // Add test that tries to move, when you can beat
+    }
+
+    @Test
+    public void testPawnBeatMove() {
+        System.out.println("Test beat pawn moves");
+
+        Board board = new Board();
+        Move move = new Move();
+
+        try {
+            move.setFrom(5, 4);
+            move.setTo(4, 3);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+
+        try {
+            move.setFrom(2, 1);
+            move.setTo(3, 2);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+
+        FieldState[][] boardStates = board.getBoard();
+        assertEquals(boardStates[3][2], FieldState.blackPawn);
+
+        try {
+            move.setFrom(4, 3);
+            move.setTo(2, 1);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+
+        boardStates = board.getBoard();
+        Player activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[4][3], FieldState.empty);
+        assertEquals(boardStates[3][2], FieldState.empty);
+        assertEquals(boardStates[2][1], FieldState.whitePawn);
+        assertEquals(activePlayer, Player.black);
+
+        try {
+            move.setFrom(1, 0);
+            move.setTo(3, 2);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+
+        boardStates = board.getBoard();
+        activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[1][0], FieldState.empty);
+        assertEquals(boardStates[2][1], FieldState.empty);
+        assertEquals(boardStates[3][2], FieldState.blackPawn);
+        assertEquals(activePlayer, Player.white);
+
+        System.out.println("Test backward beating");
+
+        try {
+            move.setFrom(5, 2);
+            move.setTo(4, 1);
+            board.performMovement(move);
+            move.setFrom(3, 2);
+            move.setTo(4, 3);
+            board.performMovement(move);
+            move.setFrom(4, 1);
+            move.setTo(3, 2);
+            board.performMovement(move);
+            move.setFrom(4, 3);
+            move.setTo(2, 1);
+        } catch (Exception e) {
+        }
+        
+        board.performMovement(move);
+        
+        boardStates = board.getBoard();
+        activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[4][3], FieldState.empty);
+        assertEquals(boardStates[3][2], FieldState.empty);
+        assertEquals(boardStates[2][1], FieldState.blackPawn);
+        assertEquals(activePlayer, Player.white);
+        
     }
 }
