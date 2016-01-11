@@ -63,6 +63,54 @@ public class BoardTest {
     }
 
     @Test
+    public void queenTest() {
+        System.out.println("Pawn upgrade to queen test");
+
+        Board board = new Board();
+        Move move = new Move();
+        try {
+            move.setFrom(5, 0);
+            move.setTo(4, 1);
+            board.performMovement(move);
+            move.setFrom(2, 3);
+            move.setTo(3, 2);
+            board.performMovement(move);
+            move.setFrom(4, 1);
+            move.setTo(2, 3);
+            board.performMovement(move);
+            move.setFrom(1, 4);
+            move.setTo(3, 2);
+            board.performMovement(move);
+            move.setFrom(6, 1);
+            move.setTo(5, 0);
+            board.performMovement(move);
+            move.setFrom(0, 5);
+            move.setTo(1, 4);
+            board.performMovement(move);
+            move.setFrom(5, 2);
+            move.setTo(4, 1);
+            board.performMovement(move);
+            move.setFrom(2, 5);
+            move.setTo(3, 6);
+            board.performMovement(move);
+            move.setFrom(4, 1);
+            move.setTo(2, 3);
+            board.performMovement(move);
+            move.setFrom(2, 3);
+            move.setTo(0, 5);
+            board.performMovement(move);
+        } catch (Exception e) {
+        }
+         
+        FieldState[][] boardStates = board.getBoard();
+        Player activePlayer = board.getActivePlayer();
+        
+        assertEquals(boardStates[0][5], FieldState.whiteQueen);
+        assertEquals(activePlayer, Player.black);
+
+    }
+
+    @Test
     public void testNormalPawnMove() {
         System.out.println("Test normal pawn moves");
 
@@ -239,7 +287,6 @@ public class BoardTest {
         } catch (Exception e) {
         }
 
-        
         board.performMovement(move);
 
         boardStates = board.getBoard();

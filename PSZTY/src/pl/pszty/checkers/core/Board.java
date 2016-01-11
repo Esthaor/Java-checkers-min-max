@@ -132,6 +132,15 @@ public class Board {
                 }
                 this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
                 this.board[fromRow][fromColumn] = FieldState.empty;
+
+                if (toRow == 0 || toRow == 7) {
+                    if (this.activePlayer.equals(Player.black)) {
+                        this.board[toRow][toColumn] = FieldState.blackQueen;
+                    } else {
+                        this.board[toRow][toColumn] = FieldState.whiteQueen;
+                    }
+                }
+
                 return true;
             }
 
@@ -171,6 +180,13 @@ public class Board {
                 this.board[betweenRow][betweenColumn] = FieldState.empty;
 
                 if (!canThisPawnBeatMore(toRow, toColumn)) {
+                    if (toRow == 0 || toRow == 7) {
+                        if (this.activePlayer.equals(Player.black)) {
+                            this.board[toRow][toColumn] = FieldState.blackQueen;
+                        } else {
+                            this.board[toRow][toColumn] = FieldState.whiteQueen;
+                        }
+                    }
                     if (this.activePlayer.equals(Player.black)) {
                         this.activePlayer = Player.white;
                     } else {
