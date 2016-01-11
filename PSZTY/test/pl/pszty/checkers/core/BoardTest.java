@@ -60,6 +60,7 @@ public class BoardTest {
                 }
             }
         }
+        System.out.println("OK");
     }
 
     @Test
@@ -101,13 +102,14 @@ public class BoardTest {
             board.performMovement(move);
         } catch (Exception e) {
         }
-         
+
         FieldState[][] boardStates = board.getBoard();
         Player activePlayer = board.getActivePlayer();
-        
+
         assertEquals(boardStates[0][5], FieldState.whiteQueen);
         assertEquals(activePlayer, Player.black);
 
+        System.out.println("OK");
     }
 
     @Test
@@ -157,7 +159,7 @@ public class BoardTest {
         assertEquals(boardStates[3][2], FieldState.blackPawn);
         assertEquals(activePlayer, Player.white);
 
-        // Add test that tries to move, when you can beat
+        System.out.println("OK");
     }
 
     @Test
@@ -182,6 +184,7 @@ public class BoardTest {
         board.performMovement(move);
 
         FieldState[][] boardStates = board.getBoard();
+
         assertEquals(boardStates[3][2], FieldState.blackPawn);
 
         try {
@@ -214,6 +217,7 @@ public class BoardTest {
         assertEquals(boardStates[3][2], FieldState.blackPawn);
         assertEquals(activePlayer, Player.white);
 
+        System.out.println("OK");
         System.out.println("Test backward beating");
 
         try {
@@ -241,6 +245,7 @@ public class BoardTest {
         assertEquals(boardStates[2][1], FieldState.blackPawn);
         assertEquals(activePlayer, Player.white);
 
+        System.out.println("OK");
         System.out.println("Multiple beat in one turn");
         try {
             move.setFrom(5, 0);
@@ -298,5 +303,35 @@ public class BoardTest {
         assertEquals(boardStates[4][3], FieldState.empty);
         assertEquals(boardStates[3][4], FieldState.blackPawn);
         assertEquals(activePlayer, Player.white);
+        System.out.println("OK");
+    }
+
+    @Test
+    public void testMoveWhenThereIsBeating() {
+        System.out.println("Test if can i move if there is beating");
+
+        Board board = new Board();
+        Move move = new Move();
+
+        try {
+            move.setFrom(5, 2);
+            move.setTo(4, 1);
+            board.performMovement(move);
+            move.setFrom(2, 3);
+            move.setTo(3, 2);
+            board.performMovement(move);
+            move.setFrom(4, 1);
+            move.setTo(3, 0);
+            board.performMovement(move);
+        } catch (Exception e) {
+        }
+
+        FieldState[][] boardStates = board.getBoard();
+        Player activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[3][0], FieldState.empty);
+        assertEquals(boardStates[4][1], FieldState.whitePawn);
+        assertEquals(activePlayer, Player.white);
+        System.out.println("OK");
     }
 }

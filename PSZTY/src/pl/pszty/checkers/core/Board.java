@@ -106,15 +106,13 @@ public class Board {
         if (this.board[fromRow][fromColumn].equals(FieldState.blackPawn)
                 || this.board[fromRow][fromColumn].equals(FieldState.whitePawn)) {
 
-            if (wasTherePossibleBeating()) {
-                return false;
-            }
-
             // Normal move without beating
-            // Dodać return false. jeżeli wykryto możliwość bicia
             if (((fromColumn + 1 == toColumn) || (fromColumn - 1 == toColumn))
                     && this.lastMoveIfMultipleBeating == null) {
 
+                if (wasTherePossibleBeating()) {
+                    return false;
+                }
                 switch (this.activePlayer) {
                     case black:
                         if (fromRow + 1 != toRow) {
@@ -228,16 +226,32 @@ public class Board {
         return this.board[toRow][toColumn].equals(FieldState.empty);
     }
 
-    public FieldState[][] getBoard() {
-        return board;
-    }
-
-    public Player getActivePlayer() {
-        return activePlayer;
-    }
-
     private boolean wasTherePossibleBeating() {
-        // TODO : zrobić
+        FieldState myPawn;
+        FieldState myQueen;
+
+        if (this.activePlayer.equals(Player.white)) {
+            myPawn = FieldState.whitePawn;
+            myQueen = FieldState.whiteQueen;
+        } else {
+            myPawn = FieldState.blackPawn;
+            myQueen = FieldState.blackQueen;
+        }
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (this.board[i][j].equals(myPawn)) {
+                    if (canThisPawnBeatMore(i, j)) {
+                        return true;
+                    }
+                }
+                if (this.board[i][j].equals(myQueen)) {
+                    if (canThisQueenBeatMore(i, j)) {
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
@@ -273,7 +287,7 @@ public class Board {
                 }
             }
         }
-        if ((row + 2) > 7) {
+        if ((row + 2) < 8) {
             if ((column - 2) >= 0) {
                 if (this.board[row + 2][column - 2].equals(FieldState.empty)
                         && (this.board[row + 1][column - 1].equals(opositePawn)
@@ -290,5 +304,18 @@ public class Board {
             }
         }
         return false;
+    }
+
+    private boolean canThisQueenBeatMore(int row, int column) {
+        // TODO: zrobić
+        return false;
+    }
+
+    public FieldState[][] getBoard() {
+        return board;
+    }
+
+    public Player getActivePlayer() {
+        return activePlayer;
     }
 }
