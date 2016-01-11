@@ -88,8 +88,9 @@ public class Board {
                     System.out.print("WQ ");
                 }
             }
-            System.out.print("\n\n");
+            System.out.print("\n");
         }
+        System.out.print("\n");
     }
 
     /**
@@ -108,7 +109,6 @@ public class Board {
             return false;
         }
 
-        // Tutaj wiemy, że ruszamy dobrym pionem/damką na puste pole
         // Normal pawn moves
         if (this.board[fromRow][fromColumn].equals(FieldState.blackPawn)
                 || this.board[fromRow][fromColumn].equals(FieldState.whitePawn)) {
@@ -201,11 +201,52 @@ public class Board {
                 } else {
                     this.lastMoveIfMultipleBeating = new Move(move);
                 }
-
                 return true;
             }
         }
 
+        // Queen moves
+        if (this.board[fromRow][fromColumn].equals(FieldState.blackQueen)
+                || this.board[fromRow][fromColumn].equals(FieldState.whiteQueen)) {
+
+            // Check if this is possible queen movement (diagonally)
+            if (Math.abs(toRow - fromRow) == Math.abs(toColumn - fromColumn)) {
+
+                int i = toRow;
+                int j = toColumn;
+                int modifierX, modifierY;
+                boolean cleanTrack = true;
+
+                if (toRow > fromRow) {
+                    modifierY = -1;
+                } else {
+                    modifierY = 1;
+                }
+
+                if (toColumn > fromColumn) {
+                    modifierX = -1;
+                } else {
+                    modifierX = 1;
+                }
+
+                while (i != fromRow) {
+                    if (!this.board[i][j].equals(FieldState.empty)) {
+                        cleanTrack = false;
+                    }
+                    i += modifierY;
+                    j += modifierX;
+                }
+                if (cleanTrack) {
+                    this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
+                    this.board[fromRow][fromColumn] = FieldState.empty;
+                    if (this.activePlayer.equals(Player.white)) {
+                        this.activePlayer = Player.black;
+                    } else {
+                        this.activePlayer = Player.white;
+                    }
+                }
+            }
+        }
         return false;
     }
 
@@ -316,6 +357,22 @@ public class Board {
     private boolean canThisQueenBeatMore(int row, int column) {
         // TODO: zrobić
         return false;
+    }
+
+    /**
+     * DO NOT USE THIS! TESTS ONLY!
+     */
+    public void prepereQueenTest() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                this.board[i][j] = FieldState.empty;
+            }
+        }
+
+        this.board[0][1] = this.board[0][3] = this.board[0][5] = FieldState.blackQueen;
+        this.board[2][1] = this.board[2][3] = FieldState.blackPawn;
+        this.board[7][2] = this.board[7][4] = this.board[7][6] = FieldState.whiteQueen;
+        this.board[5][4] = this.board[5][6] = FieldState.whitePawn;
     }
 
     public FieldState[][] getBoard() {

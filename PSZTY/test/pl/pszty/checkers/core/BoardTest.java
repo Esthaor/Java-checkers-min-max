@@ -64,7 +64,7 @@ public class BoardTest {
     }
 
     @Test
-    public void queenTest() {
+    public void pawnToQueenTest() {
         System.out.println("Pawn upgrade to queen test");
 
         Board board = new Board();
@@ -332,6 +332,47 @@ public class BoardTest {
         assertEquals(boardStates[3][0], FieldState.empty);
         assertEquals(boardStates[4][1], FieldState.whitePawn);
         assertEquals(activePlayer, Player.white);
+        System.out.println("OK");
+    }
+
+    @Test
+    public void testQueenNormalMoves() {
+        System.out.println("Test normal queen moves");
+
+        Board board = new Board();
+        Move move = new Move();
+        
+        board.prepereQueenTest();
+
+        try {
+            move.setFrom(7, 2);
+            move.setTo(2, 7);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+
+        FieldState[][] boardStates = board.getBoard();
+        Player activePlayer = board.getActivePlayer();
+
+        assertEquals(boardStates[2][7], FieldState.empty);
+        assertEquals(boardStates[7][2], FieldState.whiteQueen);
+        assertEquals(activePlayer, Player.white);
+        
+        try {
+            move.setFrom(7, 4);
+            move.setTo(4, 1);
+        } catch (Exception e) {
+        }
+        board.performMovement(move);
+        
+        boardStates = board.getBoard();
+        activePlayer = board.getActivePlayer();
+
+        board.displayBoard();
+        assertEquals(boardStates[7][4], FieldState.empty);
+        assertEquals(boardStates[4][1], FieldState.whiteQueen);
+        assertEquals(activePlayer, Player.black);
+        
         System.out.println("OK");
     }
 }
