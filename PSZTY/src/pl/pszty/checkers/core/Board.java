@@ -13,14 +13,18 @@ import pl.pszty.checkers.enums.Player;
  */
 public class Board {
 
+    private final int DRAW_CONDITION = 15;
+
     private FieldState board[][];
     private Player activePlayer;
     private Move lastMoveIfMultipleBeating;
+    private int movesWithoutBeatingCounter;
 
     public Board() {
         this.board = new FieldState[8][8];
         this.setBoard();
-        activePlayer = Player.white;
+        this.activePlayer = Player.white;
+        this.movesWithoutBeatingCounter = 0;
     }
 
     public Board(Board board) {
@@ -146,6 +150,7 @@ public class Board {
                     }
                 }
 
+                this.movesWithoutBeatingCounter++;
                 return true;
             }
 
@@ -183,6 +188,8 @@ public class Board {
                 this.board[toRow][toColumn] = this.board[fromRow][fromColumn];
                 this.board[fromRow][fromColumn] = FieldState.empty;
                 this.board[betweenRow][betweenColumn] = FieldState.empty;
+
+                this.movesWithoutBeatingCounter = 0;
 
                 if (!canThisPawnBeatMore(toRow, toColumn)) {
                     if (toRow == 0 || toRow == 7) {
@@ -272,6 +279,7 @@ public class Board {
                     } else {
                         this.activePlayer = Player.white;
                     }
+                    this.movesWithoutBeatingCounter++;
                     return true;
                 }
 
@@ -281,6 +289,9 @@ public class Board {
                     this.board[fromRow][fromColumn] = FieldState.empty;
                     this.board[opponentRow][opponentColumn] = FieldState.empty;
 
+                    this.movesWithoutBeatingCounter = 0;
+
+                    // Only one opponent or multiple
                     if (!canThisQueenBeatMore(toRow, toColumn)) {
                         if (this.activePlayer.equals(Player.black)) {
                             this.activePlayer = Player.white;
@@ -516,6 +527,53 @@ public class Board {
         return false;
     }
 
+    public Player tellMeTheWinner() {
+
+        if (this.movesWithoutBeatingCounter == DRAW_CONDITION) {
+            return Player.draw;
+        }
+
+        Player winner = Player.none;
+
+        // Is there any black
+        for (int i = 0; i < 8; i++) {
+            boolean broken = false;
+            for (int j = 0; j < 8; j++) {
+                if (this.board[i][j].equals(FieldState.blackPawn)
+                        || this.board[i][j].equals(FieldState.blackQueen)) {
+                    winner = Player.black;
+                    broken = true;
+                    break;
+                }
+            }
+            if (broken) {
+                break;
+            }
+        }
+
+        // Is there any white
+        for (int i = 0; i < 8; i++) {
+            boolean broken = false;
+            for (int j = 0; j < 8; j++) {
+                if (this.board[i][j].equals(FieldState.whitePawn)
+                        || this.board[i][j].equals(FieldState.whiteQueen)) {
+                    if (winner.equals(Player.none)) {
+                        winner = Player.white;
+                    } else {
+                        winner = Player.none;
+                    }
+                    broken = true;
+                    break;
+                }
+            }
+            if (broken) {
+                break;
+            }
+        }
+
+        return winner;
+    }
+
     /**
      * DO NOT USE THIS! TESTS ONLY!
      */
@@ -528,6 +586,34 @@ public class Board {
 
         this.board[0][1] = this.board[0][3] = this.board[0][5] = FieldState.blackQueen;
         this.board[2][1] = this.board[2][3] = FieldState.blackPawn;
+        this.board[7][2] = this.board[7][4] = this.board[7][6] = FieldState.whiteQueen;
+        this.board[5][4] = this.board[5][6] = FieldState.whitePawn;
+    }
+
+    /**
+     * DO NOT USE THIS! TESTS ONLY!
+     */
+    public void prepereBlackWinTest() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                this.board[i][j] = FieldState.empty;
+            }
+        }
+
+        this.board[0][1] = this.board[0][3] = this.board[0][5] = FieldState.blackQueen;
+        this.board[2][1] = this.board[2][3] = FieldState.blackPawn;
+    }
+
+    /**
+     * DO NOT USE THIS! TESTS ONLY!
+     */
+    public void prepereWhiteWinTest() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                this.board[i][j] = FieldState.empty;
+            }
+        }
+
         this.board[7][2] = this.board[7][4] = this.board[7][6] = FieldState.whiteQueen;
         this.board[5][4] = this.board[5][6] = FieldState.whitePawn;
     }
