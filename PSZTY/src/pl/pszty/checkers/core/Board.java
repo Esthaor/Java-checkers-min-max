@@ -355,7 +355,7 @@ public class Board {
         FieldState opositePawn;
         FieldState opositeQueen;
 
-        if (this.board[row][column].equals(FieldState.blackPawn) || this.board[row][column].equals(FieldState.blackPawn)) {
+        if (this.board[row][column].equals(FieldState.blackPawn)) {
             opositePawn = FieldState.whitePawn;
             opositeQueen = FieldState.whiteQueen;
         } else {
@@ -403,7 +403,116 @@ public class Board {
     }
 
     private boolean canThisQueenBeatMore(int row, int column) {
-        // TODO: zrobić
+        FieldState opositePawn;
+        FieldState opositeQueen;
+        FieldState myPawn;
+        FieldState myQueen;
+        int testedRow, testedColumn;
+
+        if (this.board[row][column].equals(FieldState.blackQueen)) {
+            opositePawn = FieldState.whitePawn;
+            opositeQueen = FieldState.whiteQueen;
+            myPawn = FieldState.blackPawn;
+            myQueen = FieldState.blackQueen;
+        } else {
+            opositePawn = FieldState.blackPawn;
+            opositeQueen = FieldState.blackQueen;
+            myPawn = FieldState.whitePawn;
+            myQueen = FieldState.whiteQueen;
+        }
+
+        if (this.board[row][column].equals(FieldState.empty)) {
+            throw new RuntimeException("This field is empty!");
+        }
+
+        testedColumn = column - 1;
+        testedRow = row - 1;
+
+        while ((testedColumn >= 0) && (testedRow >= 0)) {
+            if (this.board[testedRow][testedColumn].equals(myPawn)
+                    || this.board[testedRow][testedColumn].equals(myQueen)) {
+                break;
+            }
+            if (this.board[testedRow][testedColumn].equals(opositePawn)
+                    || this.board[testedRow][testedColumn].equals(opositeQueen)) {
+                testedColumn--;
+                testedRow--;
+                if ((testedColumn >= 0) && (testedRow >= 0)) {
+                    if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+                        return true;
+                    }
+                }
+            }
+            testedColumn--;
+            testedRow--;
+        }
+
+        testedColumn = column - 1;
+        testedRow = row + 1;
+
+        while ((testedColumn >= 0) && (testedRow < 8)) {
+            if (this.board[testedRow][testedColumn].equals(myPawn)
+                    || this.board[testedRow][testedColumn].equals(myQueen)) {
+                break;
+            }
+            if (this.board[testedRow][testedColumn].equals(opositePawn)
+                    || this.board[testedRow][testedColumn].equals(opositeQueen)) {
+                testedColumn--;
+                testedRow++;
+                if ((testedColumn >= 0) && (testedRow < 8)) {
+                    if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+                        return true;
+                    }
+                }
+            }
+            testedColumn--;
+            testedRow++;
+        }
+
+        testedColumn = column + 1;
+        testedRow = row - 1;
+
+        while ((testedColumn < 8) && (testedRow >= 0)) {
+            if (this.board[testedRow][testedColumn].equals(myPawn)
+                    || this.board[testedRow][testedColumn].equals(myQueen)) {
+                break;
+            }
+            if (this.board[testedRow][testedColumn].equals(opositePawn)
+                    || this.board[testedRow][testedColumn].equals(opositeQueen)) {
+                testedColumn++;
+                testedRow--;
+                if ((testedColumn < 8) && (testedRow >= 0)) {
+                    if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+                        return true;
+                    }
+                }
+            }
+            testedColumn++;
+            testedRow--;
+        }
+
+        testedColumn = column + 1;
+        testedRow = row + 1;
+
+        while ((testedColumn < 8) && (testedRow < 8)) {
+            if (this.board[testedRow][testedColumn].equals(myPawn)
+                    || this.board[testedRow][testedColumn].equals(myQueen)) {
+                break;
+            }
+            if (this.board[testedRow][testedColumn].equals(opositePawn)
+                    || this.board[testedRow][testedColumn].equals(opositeQueen)) {
+                testedColumn++;
+                testedRow++;
+                if ((testedColumn < 8) && (testedRow < 8)) {
+                    if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+                        return true;
+                    }
+                }
+            }
+            testedColumn++;
+            testedRow++;
+        }
+
         return false;
     }
 
