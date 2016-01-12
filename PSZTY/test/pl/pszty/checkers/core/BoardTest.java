@@ -416,7 +416,6 @@ public class BoardTest {
         assertEquals(boardStates[4][1], FieldState.empty);
         assertEquals(boardStates[2][3], FieldState.empty);
         assertEquals(boardStates[1][4], FieldState.whiteQueen);
-        board.displayBoard();
         assertEquals(activePlayer, Player.black);
 
         System.out.println("OK");
