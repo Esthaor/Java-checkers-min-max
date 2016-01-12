@@ -416,7 +416,6 @@ public class BoardTest {
         assertEquals(boardStates[4][1], FieldState.empty);
         assertEquals(boardStates[2][3], FieldState.empty);
         assertEquals(boardStates[1][4], FieldState.whiteQueen);
-        board.displayBoard();
         assertEquals(activePlayer, Player.black);
 
         System.out.println("OK");
@@ -475,7 +474,7 @@ public class BoardTest {
             board.performMovement(move);
         } catch (Exception e) {
         }
-        
+
         boardStates = board.getBoard();
         activePlayer = board.getActivePlayer();
 
@@ -484,6 +483,28 @@ public class BoardTest {
         assertEquals(boardStates[5][4], FieldState.empty);
         assertEquals(activePlayer, Player.black);
 
+        System.out.println("OK");
+    }
+
+    @Test
+    public void testWinCondition() {
+        System.out.println("Test win condition");
+        
+        Board board = new Board();
+        Player tellMeTheWinner = board.tellMeTheWinner();
+        
+        assertEquals(Player.none, tellMeTheWinner);
+        
+        board.prepereWhiteWinTest();
+        tellMeTheWinner = board.tellMeTheWinner();
+        
+        assertEquals(Player.white, tellMeTheWinner);
+        
+        board.prepereBlackWinTest();
+        tellMeTheWinner = board.tellMeTheWinner();
+        
+        assertEquals(Player.black, tellMeTheWinner);
+        
         System.out.println("OK");
     }
 }
