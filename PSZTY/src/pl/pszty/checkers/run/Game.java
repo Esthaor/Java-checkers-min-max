@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package temp;
+package pl.pszty.checkers.run;
 
 import pl.pszty.checkers.core.Board;
 
@@ -11,7 +11,7 @@ import pl.pszty.checkers.core.Board;
  *
  * @author Grzegorz Majchrzak
  */
-public class PSZTY {
+public class Game {
 
     /**
      * @param args the command line arguments

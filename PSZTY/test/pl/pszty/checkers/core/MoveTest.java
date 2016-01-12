@@ -42,6 +42,7 @@ public class MoveTest {
      */
     @Test
     public void testSetFrom() {
+        System.out.println("Test setting from");
         Move instance = new Move();
         boolean thrown = false;
         try {
@@ -57,10 +58,12 @@ public class MoveTest {
         }
         assertEquals("Test move cords", instance.getFromColumn(), 2);
         assertEquals("Test move cords", instance.getFromRow(), 5);
+        System.out.println("OK");
     }
 
     @Test
     public void testSetTo() {
+        System.out.println("Test setting to");
         Move instance = new Move();
         boolean thrown = false;
         try {
@@ -76,5 +79,6 @@ public class MoveTest {
         }
         assertEquals("Test move cords", instance.getToColumn(), 5);
         assertEquals("Test move cords", instance.getToRow(), 2);
+        System.out.println("OK");
     }
 }
