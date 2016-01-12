@@ -491,8 +491,12 @@ public class BoardTest {
         System.out.println("Test win condition");
         
         Board board = new Board();
-        board.prepereWhiteWinTest();
         Player tellMeTheWinner = board.tellMeTheWinner();
+        
+        assertEquals(Player.none, tellMeTheWinner);
+        
+        board.prepereWhiteWinTest();
+        tellMeTheWinner = board.tellMeTheWinner();
         
         assertEquals(Player.white, tellMeTheWinner);
         
