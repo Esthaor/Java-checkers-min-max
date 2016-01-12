@@ -143,10 +143,11 @@ public class Board {
                 this.board[fromRow][fromColumn] = FieldState.empty;
 
                 if (toRow == 0 || toRow == 7) {
+                    // Inverted order, because already changed active player
                     if (this.activePlayer.equals(Player.black)) {
-                        this.board[toRow][toColumn] = FieldState.blackQueen;
-                    } else {
                         this.board[toRow][toColumn] = FieldState.whiteQueen;
+                    } else {
+                        this.board[toRow][toColumn] = FieldState.blackQueen;
                     }
                 }
 
@@ -192,7 +193,7 @@ public class Board {
                 this.movesWithoutBeatingCounter = 0;
 
                 if (!canThisPawnBeatMore(toRow, toColumn)) {
-                    if (toRow == 0 || toRow == 7) {
+                    if (((toRow == 0) && this.activePlayer.equals(Player.white)) || ((toRow == 7) && this.activePlayer.equals(Player.black))) {
                         if (this.activePlayer.equals(Player.black)) {
                             this.board[toRow][toColumn] = FieldState.blackQueen;
                         } else {
@@ -307,6 +308,27 @@ public class Board {
             }
         }
         return false;
+    }
+
+    private boolean canAnyActivePlayerFigureMove() {
+        return true;
+        //return false; TODO: NAPISAĆ TO!
+    }
+
+    private boolean canThisPawnMove(int row, int column) {
+        if (canThisPawnBeatMore(row, column)) {
+            return true;
+        }
+        if (this.board[row][column].equals(FieldState.blackPawn)) {
+            
+        }   
+        return true;
+        //return false; TODO: NAPISAĆ TO!
+    }
+
+    private boolean canThisQueenMove(int row, int column) {
+        return true;
+        //return false; TODO: NAPISAĆ TO!
     }
 
     private boolean isMoveValid(Move move) {
@@ -534,6 +556,14 @@ public class Board {
         }
 
         Player winner = Player.none;
+
+        if (!canAnyActivePlayerFigureMove()) {
+            if (this.activePlayer.equals(Player.black)) {
+                return Player.white;
+            } else {
+                return Player.black;
+            }
+        }
 
         // Is there any black
         for (int i = 0; i < 8; i++) {

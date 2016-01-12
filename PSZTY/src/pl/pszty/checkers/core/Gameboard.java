@@ -19,7 +19,7 @@ public final class Gameboard {
 
     private Gameboard() {
         newGame();
-        winner = Player.none;
+        this.winner = Player.none;
     }
 
     public static Gameboard getInstance() {
@@ -36,14 +36,22 @@ public final class Gameboard {
     public boolean performWhitePlayerMovement(Move move) {
 
         if (getActivePlayer().equals(Player.white)) {
-            return officialBoard.performMovement(move);
+            boolean performMovement = officialBoard.performMovement(move);
+            if (performMovement == true) {
+                this.winner = officialBoard.tellMeTheWinner();
+            }
+            return performMovement;
         }
         return false;
     }
 
     public boolean performBlackPlayerMovement(Move move) {
         if (getActivePlayer().equals(Player.black)) {
-            return officialBoard.performMovement(move);
+            boolean performMovement = officialBoard.performMovement(move);
+            if (performMovement == true) {
+                this.winner = officialBoard.tellMeTheWinner();
+            }
+            return performMovement;
         }
         return false;
     }
