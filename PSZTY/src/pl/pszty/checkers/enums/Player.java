@@ -10,5 +10,5 @@ public enum Player {
     white,
     black,
     draw,
-    noone
+    none
 }
