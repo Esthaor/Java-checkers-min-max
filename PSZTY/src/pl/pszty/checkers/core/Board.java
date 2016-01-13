@@ -28,9 +28,13 @@ public class Board {
     }
 
     public Board(Board board) {
+        this.board = new FieldState[8][8];
+        this.movesWithoutBeatingCounter = board.getMovesWithoutBeatingCounter();
+        this.lastMoveIfMultipleBeating = board.getLastMoveIfMultipleBeating();
         this.activePlayer = board.getActivePlayer();
+        FieldState[][] states = board.getBoard();
         for (int i = 0; i < 8; i++) {
-            System.arraycopy(board.board[i], 0, this.board[i], 0, 8);
+            System.arraycopy(states[i], 0, this.board[i], 0, 8);
         }
     }
 
@@ -654,5 +658,13 @@ public class Board {
 
     public Player getActivePlayer() {
         return activePlayer;
+    }
+
+    public int getMovesWithoutBeatingCounter() {
+        return movesWithoutBeatingCounter;
+    }
+
+    public Move getLastMoveIfMultipleBeating() {
+        return lastMoveIfMultipleBeating;
     }
 }
