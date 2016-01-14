@@ -1,5 +1,9 @@
 package pl.pszty.checkers.ai;
 
+import pl.pszty.checkers.core.Board;
+import pl.pszty.checkers.core.Gameboard;
+import pl.pszty.checkers.enums.FieldState;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -85,6 +89,21 @@ public class BoardState {
                 System.out.print(this.randomNumberedTable[row][column].toString() + " ");
             System.out.println();
         }
+    }
+
+    public BigInteger countHashingFuction(Board board) {
+        FieldState[][] fieldStates = board.getBoard();
+        BigInteger sum = new BigInteger("0");
+        BigInteger power = new BigInteger("2");
+        power = power.pow(64);
+        for(int row = 0; row < 8; row++){
+            for(int column = 0; column < 4; column++){
+                if((row + column)%2 != 0){
+                    sum = sum.add(this.randomNumberedTable[(row+column)/2][fieldStates[row][column].getValue()].mod(power));
+                }
+            }
+        }
+        return sum;
     }
 
 }
