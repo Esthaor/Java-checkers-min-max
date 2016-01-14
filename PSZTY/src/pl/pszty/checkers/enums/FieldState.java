@@ -1,5 +1,7 @@
 package pl.pszty.checkers.enums;
 
+import java.math.BigInteger;
+
 /**
  *
  * @author Grzegorz Majchrzak
@@ -7,9 +9,19 @@ package pl.pszty.checkers.enums;
  *
  */
 public enum FieldState {
-    empty,
-    whitePawn,
-    blackPawn,
-    whiteQueen,
-    blackQueen
+    empty(0),
+    whitePawn(1),
+    blackPawn(2),
+    whiteQueen(3),
+    blackQueen(4);
+
+    private int value;
+
+    private FieldState(int value){
+        this.value = value;
+    }
+
+    public int getValue(){
+        return this.value;
+    }
 }
