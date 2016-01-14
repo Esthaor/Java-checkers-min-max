@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import pl.pszty.checkers.core.Gameboard;
 import pl.pszty.checkers.core.Move;
 import pl.pszty.checkers.enums.Player;
+import pl.pszty.checkers.gui.BoardRenderer;
 
 /**
  *
@@ -23,6 +24,7 @@ public class Game {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        new BoardRenderer();
         Gameboard mainGame = Gameboard.getInstance();
 
         Scanner userInput;
