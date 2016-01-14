@@ -315,24 +315,100 @@ public class Board {
     }
 
     private boolean canAnyActivePlayerFigureMove() {
-        return true;
-        //return false; TODO: NAPISAĆ TO!
+        FieldState myPawn;
+        FieldState myQueen;
+
+        if (this.activePlayer.equals(Player.black)) {
+            myPawn = FieldState.blackPawn;
+            myQueen = FieldState.blackQueen;
+        } else {
+            myPawn = FieldState.whitePawn;
+            myQueen = FieldState.whiteQueen;
+        }
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (this.board[i][j].equals(myPawn)) {
+                    if (canThisPawnMove(i, j)) {
+                        return true;
+                    }
+                }
+                if (this.board[i][j].equals(myQueen)) {
+                    if (canThisQueenMove(i, j)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private boolean canThisPawnMove(int row, int column) {
+
         if (canThisPawnBeatMore(row, column)) {
             return true;
         }
-        if (this.board[row][column].equals(FieldState.blackPawn)) {
-            
-        }   
-        return true;
-        //return false; TODO: NAPISAĆ TO!
+
+        if (this.board[row][column].equals(FieldState.blackPawn) && (row < 7)) {
+            if (column > 0) {
+                if (this.board[row + 1][column - 1].equals(FieldState.empty)) {
+                    return true;
+                }
+            }
+            if (column < 7) {
+                if (this.board[row + 1][column + 1].equals(FieldState.empty)) {
+                    return true;
+                }
+            }
+        }
+
+        if (this.board[row][column].equals(FieldState.whitePawn) && (row > 0)) {
+            if (column > 0) {
+                if (this.board[row - 1][column - 1].equals(FieldState.empty)) {
+                    return true;
+                }
+            }
+            if (column < 7) {
+                if (this.board[row - 1][column + 1].equals(FieldState.empty)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean canThisQueenMove(int row, int column) {
-        return true;
-        //return false; TODO: NAPISAĆ TO!
+        if (canThisQueenBeatMore(row, column)) {
+            return true;
+        }
+
+        if (row > 0) {
+            if (column > 0) {
+                if (this.board[row - 1][column - 1].equals(FieldState.empty)) {
+                    return true;
+                }
+            }
+            if (column < 7) {
+                if (this.board[row - 1][column + 1].equals(FieldState.empty)) {
+                    return true;
+                }
+            }
+        }
+
+        if (row < 7) {
+            if (column > 0) {
+                if (this.board[row + 1][column - 1].equals(FieldState.empty)) {
+                    return true;
+                }
+            }
+            if (column < 7) {
+                if (this.board[row + 1][column + 1].equals(FieldState.empty)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private boolean isMoveValid(Move move) {
@@ -650,6 +726,21 @@ public class Board {
 
         this.board[7][2] = this.board[7][4] = this.board[7][6] = FieldState.whiteQueen;
         this.board[5][4] = this.board[5][6] = FieldState.whitePawn;
+    }
+
+    /**
+     * DO NOT USE THIS! TESTS ONLY!
+     */
+    public void prepereCannotMoveTest() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                this.board[i][j] = FieldState.empty;
+            }
+        }
+
+        this.board[4][6] = this.board[3][5] = FieldState.blackPawn;
+        this.board[5][7] = FieldState.whitePawn;
+        this.activePlayer = Player.white;
     }
 
     public FieldState[][] getBoard() {

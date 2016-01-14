@@ -489,20 +489,33 @@ public class BoardTest {
     @Test
     public void testWinCondition() {
         System.out.println("Test win condition");
-        
+
         Board board = new Board();
         Player tellMeTheWinner = board.tellMeTheWinner();
-        
+
         assertEquals(Player.none, tellMeTheWinner);
-        
+
         board.prepereWhiteWinTest();
         tellMeTheWinner = board.tellMeTheWinner();
-        
+
         assertEquals(Player.white, tellMeTheWinner);
-        
+
         board.prepereBlackWinTest();
         tellMeTheWinner = board.tellMeTheWinner();
-        
+
+        assertEquals(Player.black, tellMeTheWinner);
+
+        System.out.println("OK");
+    }
+
+    @Test
+    public void testCannotMoveSituation() {
+        System.out.println("Test cannot move situation");
+
+        Board board = new Board();
+        board.prepereCannotMoveTest();
+        Player tellMeTheWinner = board.tellMeTheWinner();
+
         assertEquals(Player.black, tellMeTheWinner);
         
         System.out.println("OK");
