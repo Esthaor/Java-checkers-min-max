@@ -1,2 +1,2 @@
-# gittest
-test
+# projekt PSZTY
+Sztuczna inteligencja w warcabach
