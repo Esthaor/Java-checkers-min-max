@@ -684,6 +684,11 @@ public class Board {
         return winner;
     }
 
+    public int getBoardEvaulation(){
+        //@TODO: 15.01.2016 - Funkcja oceniajaca sytuacje na planszy
+        return 0;
+    }
+
     /**
      * DO NOT USE THIS! TESTS ONLY!
      */
