@@ -855,7 +855,82 @@ public class Board {
                     }
                 } // End of checking pawn
                 if (this.board[row][column].equals(myQueen)) {
-
+                    // Normal moves of queen
+                    int i = row - 1, j = column - 1;
+                    while (i >= 0 && j >= 0) {
+                        if (this.board[i][j].equals(FieldState.empty)) {
+                            Move move = new Move();
+                            try {
+                                move.setFrom(row, column);
+                                move.setTo(i, j);
+                            } catch (Exception e) {
+                            }
+                            Board possibleBoard = new Board(this);
+                            possibleBoard.performMovement(move);
+                            possibleMoves.put(possibleBoard, move);
+                        } else if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                            break;
+                        }
+                        i--;
+                        j--;
+                    }
+                    i = row - 1;
+                    j = column + 1;
+                    while (i >= 0 && j < 8) {
+                        if (this.board[i][j].equals(FieldState.empty)) {
+                            Move move = new Move();
+                            try {
+                                move.setFrom(row, column);
+                                move.setTo(i, j);
+                            } catch (Exception e) {
+                            }
+                            Board possibleBoard = new Board(this);
+                            possibleBoard.performMovement(move);
+                            possibleMoves.put(possibleBoard, move);
+                        } else if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                            break;
+                        }
+                        i--;
+                        j++;
+                    }
+                    i = row + 1;
+                    j = column - 1;
+                    while (i < 8 && j >= 0) {
+                        if (this.board[i][j].equals(FieldState.empty)) {
+                            Move move = new Move();
+                            try {
+                                move.setFrom(row, column);
+                                move.setTo(i, j);
+                            } catch (Exception e) {
+                            }
+                            Board possibleBoard = new Board(this);
+                            possibleBoard.performMovement(move);
+                            possibleMoves.put(possibleBoard, move);
+                        } else if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                            break;
+                        }
+                        i++;
+                        j--;
+                    }
+                    i = row + 1;
+                    j = column + 1;
+                    while (i < 8 && j < 8) {
+                        if (this.board[i][j].equals(FieldState.empty)) {
+                            Move move = new Move();
+                            try {
+                                move.setFrom(row, column);
+                                move.setTo(i, j);
+                            } catch (Exception e) {
+                            }
+                            Board possibleBoard = new Board(this);
+                            possibleBoard.performMovement(move);
+                            possibleMoves.put(possibleBoard, move);
+                        } else if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                            break;
+                        }
+                        i++;
+                        j++;
+                    }
                 }
             }
         }
