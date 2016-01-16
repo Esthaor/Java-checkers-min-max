@@ -1,5 +1,7 @@
 package pl.pszty.checkers.core;
 
+import java.util.HashMap;
+import java.util.Map;
 import pl.pszty.checkers.enums.FieldState;
 import pl.pszty.checkers.enums.Player;
 
@@ -684,7 +686,7 @@ public class Board {
         return winner;
     }
 
-    public int getBoardEvaulation(){
+    public int getBoardEvaulation() {
         //@TODO: 15.01.2016 - Funkcja oceniajaca sytuacje na planszy
         return 0;
     }
@@ -703,6 +705,101 @@ public class Board {
         this.board[2][1] = this.board[2][3] = FieldState.blackPawn;
         this.board[7][2] = this.board[7][4] = this.board[7][6] = FieldState.whiteQueen;
         this.board[5][4] = this.board[5][6] = FieldState.whitePawn;
+    }
+
+    public Map<Board, Move> getPossibleMoves() {
+
+        FieldState myPawn;
+        FieldState myQueen;
+        FieldState opositePawn;
+        FieldState opositeQueen;
+
+        if (this.activePlayer.equals(Player.black)) {
+            myPawn = FieldState.blackPawn;
+            myQueen = FieldState.blackQueen;
+            opositePawn = FieldState.whitePawn;
+            opositeQueen = FieldState.whiteQueen;
+        } else {
+            myPawn = FieldState.whitePawn;
+            myQueen = FieldState.whiteQueen;
+            opositePawn = FieldState.blackPawn;
+            opositeQueen = FieldState.blackQueen;
+        }
+
+        HashMap<Board, Move> possibleMoves = new HashMap<>();
+
+        for (int row = 0; row < 8; row++) {
+            for (int column = 0; column < 8; column++) {
+
+                if (this.board[row][column].equals(myPawn)) {
+                    if ((row - 2) >= 0) {
+                        if ((column - 2) >= 0) {
+                            if (this.board[row - 2][column - 2].equals(FieldState.empty)
+                                    && (this.board[row - 1][column - 1].equals(opositePawn)
+                                    || (this.board[row - 1][column - 1].equals(opositeQueen)))) {
+                                Move move = new Move();
+                                try {
+                                    move.setFrom(row, column);
+                                    move.setTo(row - 2, column - 2);
+                                } catch (Exception e) {
+                                }
+                                Board possibleBoard = new Board(this);
+                                possibleBoard.performMovement(move);
+                                possibleMoves.put(possibleBoard, move);
+                            }
+                        }
+                        if ((column + 2) < 8) {
+                            if (this.board[row - 2][column + 2].equals(FieldState.empty)
+                                    && (this.board[row - 1][column + 1].equals(opositePawn)
+                                    || (this.board[row - 1][column + 1].equals(opositeQueen)))) {
+                                Move move = new Move();
+                                try {
+                                    move.setFrom(row, column);
+                                    move.setTo(row - 2, column + 2);
+                                } catch (Exception e) {
+                                }
+                                Board possibleBoard = new Board(this);
+                                possibleBoard.performMovement(move);
+                                possibleMoves.put(possibleBoard, move);
+                            }
+                        }
+                    }
+                    if ((row + 2) < 8) {
+                        if ((column - 2) >= 0) {
+                            if (this.board[row + 2][column - 2].equals(FieldState.empty)
+                                    && (this.board[row + 1][column - 1].equals(opositePawn)
+                                    || (this.board[row + 1][column - 1].equals(opositeQueen)))) {
+                                Move move = new Move();
+                                try {
+                                    move.setFrom(row, column);
+                                    move.setTo(row + 2, column - 2);
+                                } catch (Exception e) {
+                                }
+                                Board possibleBoard = new Board(this);
+                                possibleBoard.performMovement(move);
+                                possibleMoves.put(possibleBoard, move);
+                            }
+                        }
+                        if ((column + 2) < 8) {
+                            if (this.board[row + 2][column + 2].equals(FieldState.empty)
+                                    && (this.board[row + 1][column + 1].equals(opositePawn)
+                                    || (this.board[row + 1][column + 1].equals(opositeQueen)))) {
+                                Move move = new Move();
+                                try {
+                                    move.setFrom(row, column);
+                                    move.setTo(row + 2, column + 2);
+                                } catch (Exception e) {
+                                }
+                                Board possibleBoard = new Board(this);
+                                possibleBoard.performMovement(move);
+                                possibleMoves.put(possibleBoard, move);
+                            }
+                        }
+                    }
+                }
+            } // End of checking pawn
+        }
+        return possibleMoves;
     }
 
     /**
