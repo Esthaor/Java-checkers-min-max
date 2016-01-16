@@ -26,14 +26,6 @@ public class BoardState {
     private Gameboard gameboard;
     private Player player;
 
-    private class HashMovePair {
-        private BigInteger hash;
-        //private Gameboard gameboard;
-
-
-    }
-
-
     public BoardState() {
         String os = System.getProperty("os.name");
 
@@ -142,7 +134,7 @@ public class BoardState {
         transpositionTable.put(hash, transpositionTableCell);
     }
 
-    public void minMaxAplhaBeta(BigInteger state, int depth) {
+    public void minMaxAlphaBeta(BigInteger state, int depth) {
         TranspositionTableCell transpositionTableCell = this.transpositionTable.get(state);
         if (transpositionTableCell != null)
             if (transpositionTableCell.getSearchingDepth() >= 5)
@@ -205,5 +197,15 @@ public class BoardState {
         }
     }
 
+    public void performThinkingAndMove(){
+        Board board = gameboard.getCoppyOfOfficialBoard();
+        BigInteger hash = countHashFunction(board);
+        minMaxAlphaBeta(hash, 15);
+        TranspositionTableCell transpositionTableCell = this.transpositionTable.get(hash);
+        if(this.player.equals(Player.black))
+            gameboard.performWhitePlayerMovement(transpositionTableCell.getBetaMove());
+        else
+            gameboard.performBlackPlayerMovement(transpositionTableCell.getBetaMove());
+    }
 
 }
