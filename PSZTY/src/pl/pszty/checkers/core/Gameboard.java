@@ -14,7 +14,7 @@ public final class Gameboard {
 
     private Board officialBoard;
     private Player winner;
-    private Player computer;
+    private Player humanPlayer;
 
     private static Gameboard instance = null;
 
@@ -73,12 +73,12 @@ public final class Gameboard {
         return officialBoard.getActivePlayer();
     }
 
-    public Player getComputer() {
-        return computer;
+    public Player getHumanPlayer() {
+        return humanPlayer;
     }
 
-    public void setComputer(Player computer) {
-        this.computer = computer;
+    public void setHumanPlayer(Player humanPlayer) {
+        this.humanPlayer = humanPlayer;
     }
 
 }
