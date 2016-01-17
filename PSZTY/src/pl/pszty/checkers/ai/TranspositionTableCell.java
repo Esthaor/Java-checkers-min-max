@@ -1,6 +1,7 @@
 package pl.pszty.checkers.ai;
 
 import pl.pszty.checkers.core.Board;
+import pl.pszty.checkers.core.Move;
 
 import java.math.BigInteger;
 
@@ -8,32 +9,52 @@ import java.math.BigInteger;
  * Created by Michal on 14.01.2016.
  */
 public class TranspositionTableCell {
-    private BigInteger minParam;
-    private BigInteger maxParam;
+    private int alpha;
+    private int beta;
+    private Move alphaMove;
+    private Move betaMove;
     private int searchingDepth;
     private Board board;
 
-    public TranspositionTableCell(BigInteger minParam, BigInteger maxParam, int searchingDepth, Board board) {
-        this.minParam = minParam;
-        this.maxParam = maxParam;
+    public TranspositionTableCell(int alpha, int beta, Move alphaMove, Move betaMove, int searchingDepth, Board board) {
+        this.alpha = alpha;
+        this.beta = beta;
+        this.alphaMove = alphaMove;
+        this.betaMove = betaMove;
         this.searchingDepth = searchingDepth;
         this.board = board;
     }
 
-    public BigInteger getMinParam() {
-        return minParam;
+    public int getAlpha() {
+        return alpha;
     }
 
-    public void setMinParam(BigInteger minParam) {
-        this.minParam = minParam;
+    public void setAlpha(int alpha) {
+        this.alpha = alpha;
     }
 
-    public BigInteger getMaxParam() {
-        return maxParam;
+    public int getBeta() {
+        return beta;
     }
 
-    public void setMaxParam(BigInteger maxParam) {
-        this.maxParam = maxParam;
+    public void setBeta(int beta) {
+        this.beta = beta;
+    }
+
+    public Move getAlphaMove() {
+        return alphaMove;
+    }
+
+    public void setAlphaMove(Move alphaMove) {
+        this.alphaMove = alphaMove;
+    }
+
+    public Move getBetaMove() {
+        return betaMove;
+    }
+
+    public void setBetaMove(Move betaMove) {
+        this.betaMove = betaMove;
     }
 
     public int getSearchingDepth() {

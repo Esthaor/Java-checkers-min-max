@@ -2,6 +2,7 @@ package pl.pszty.checkers.ai;
 
 import pl.pszty.checkers.core.Board;
 import pl.pszty.checkers.core.Gameboard;
+import pl.pszty.checkers.core.Move;
 import pl.pszty.checkers.enums.FieldState;
 import pl.pszty.checkers.enums.Player;
 
@@ -23,14 +24,7 @@ public class BoardState {
     private Map<BigInteger, TranspositionTableCell> transpositionTable;
     private Path rnTableFile;
     private Gameboard gameboard;
-
-    private class HashMovePair {
-        private BigInteger hash;
-        //private Gameboard gameboard;
-
-
-    }
-
+    private Player player;
 
     public BoardState() {
         String os = System.getProperty("os.name");
@@ -56,6 +50,7 @@ public class BoardState {
             }
         }
         this.gameboard = Gameboard.getInstance();
+        this.player = gameboard.getHumanPlayer();
         this.transpositionTable = new HashMap<>();
     }
 
@@ -97,7 +92,7 @@ public class BoardState {
         }
     }
 
-    private BigInteger countHashingFunction(Board board) {
+    private BigInteger countHashFunction(Board board) {
         FieldState[][] fieldStates = board.getBoard();
         BigInteger sum = new BigInteger("0");
         BigInteger power = new BigInteger("2");
@@ -112,58 +107,105 @@ public class BoardState {
         return sum;
     }
 
-    private void insertTranspositionTableCell(Board board) {
-        BigInteger min = new BigInteger("0");
-        BigInteger max = new BigInteger("0");
-        int b = 0;
-        TranspositionTableCell transpositionTableCell = new TranspositionTableCell(/*@todo minParam*/min, /*@todo minmaxparam*/max, /*@todo depth of search*/ b, board);
-        transpositionTable.put(countHashingFunction(board), transpositionTableCell);
+    private BigInteger getNextMoveHash(BigInteger hash, Move nextMove, Board board) {
+        //@TODO XOR XOR XOR - > bedziemy:
+        FieldState[][] fieldStates = board.getBoard();
+        int fromColumn = nextMove.getFromColumn();
+        int fromRow = nextMove.getFromRow();
+        int toColumn = nextMove.getToColumn();
+        int toRow = nextMove.getToRow();
+
+        //@TODO BITY? CZY NIE BITY?
+
+        FieldState fromFigure = fieldStates[fromRow][fromColumn];
+        FieldState toFigure = fieldStates[toRow][toColumn];
+
+        BigInteger newHash = hash.xor(this.randomNumberedTable[(fromRow + fromColumn) / 2][fromFigure.getValue()]);
+        newHash = newHash.xor(this.randomNumberedTable[(toRow + toColumn) / 2][toFigure.getValue()]);
+
+        newHash = newHash.xor(this.randomNumberedTable[(fromRow + fromColumn) / 2][toFigure.getValue()]);
+        newHash = newHash.xor(this.randomNumberedTable[(toRow + toColumn) / 2][fromFigure.getValue()]);
+
+        return newHash;
     }
 
-    public Integer minMaxAplhaBeta(BigInteger state, int depth) {
-        return alphaBeta(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    private void insertTranspositionTableCell(BigInteger hash, int alpha, int beta, Move alphaMove, Move betaMove, int depth, Board board) {
+        TranspositionTableCell transpositionTableCell = new TranspositionTableCell(alpha, beta, alphaMove, betaMove, depth, board);
+        transpositionTable.put(hash, transpositionTableCell);
+    }
+
+    public void minMaxAlphaBeta(BigInteger state, int depth) {
+        TranspositionTableCell transpositionTableCell = this.transpositionTable.get(state);
+        if (transpositionTableCell != null)
+            if (transpositionTableCell.getSearchingDepth() >= 5)
+                return;
+        alphaBeta(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        //mamy odpowiedz jaki ruch wykonac w tabeli transpozycji
     }
 
     private Integer alphaBeta(BigInteger state, int depth, Integer alpha, Integer beta) {
-        Board board = transpositionTable.get(state).getBoard();
-        if (this.transpositionTable.containsKey(state)) {
+        Board board = this.transpositionTable.get(state).getBoard();
+        if (this.transpositionTable.containsKey(state)) {           //istnieje juz taki stan w tabeli transpozycji
             if (this.transpositionTable.get(state).getSearchingDepth() >= depth) {
-                if (board.getActivePlayer().equals(Player.white)) {  //na sztywno -> gracz jest bialy
-                    return beta;
+                if (board.getActivePlayer().equals(this.player)) {  //na sztywno -> gracz jest bialy
+                    return alpha;   //w dokumentacji beta
                 } else {
-                    return alpha;
+                    return beta;    //w dokmentacji alpha
                 }
             }
         }
         if (!board.tellMeTheWinner().equals(Player.none) || (depth == 0)) {
             return board.getBoardEvaulation();
         }
-        if (board.getActivePlayer().equals(Player.white)) {   //na sztywno -> biały to gracz
-                    /*Lista = board.getListaPotomkow();
-                      foreach ( potemoek : Lista ) {
-                            //XOR?! -> może wyjątek z powodu zbity pionek
-                            //zapis do tabeli transpozycji
-                            alpha = Math.max(alpha, alphaBeta(potomek,, depth-1, alpha, beta);
-                            if (alpha >= beta)
-                                return beta
-                       }
-                       return alpha
-                    */
-            return alpha; //temp
+        //algorytm realizowany z punktu widzenia gracza; im wieksza
+        if (board.getActivePlayer().equals(this.player)) {   //na sztywno -> biały to gracz
+            Map<Board, Move> possibleMoves = board.getPossibleMoves();
+            Set<Board> possibleBoards = possibleMoves.keySet();
+            Move maxMove = null;
+            for (Board child : possibleBoards) {
+                BigInteger hash = getNextMoveHash(state, possibleMoves.get(child), child);
+                int temp = alphaBeta(hash, depth - 1, alpha, beta);
+                if (temp > alpha) {
+                    alpha = temp;
+                    maxMove = possibleMoves.get(child);
+                }
+                if (alpha >= beta) {
+                    insertTranspositionTableCell(hash, alpha, beta, maxMove, null, depth, child);
+                    return beta;
+                }
+            }
+            insertTranspositionTableCell(state, alpha, beta, maxMove, null, depth, board);
+            return alpha;
         } else {
-                    /*Lista = board.getListaPotomkow();
-                      foreach ( potemoek : Lista ) {
-                            //XOR?! -> może wyjątek z powodu zbity pionek
-                            //zapis do tabeli transpozycji
-                            beta = Math.max(beta, alphaBeta(potomek,, depth-1, alpha, beta);
-                            if (alpha >= beta)
-                                return alpha
-                       }
-                       return beta
-                    */
-            return beta; //temp
+            Map<Board, Move> possibleMoves = board.getPossibleMoves();
+            Set<Board> possibleBoards = possibleMoves.keySet();
+            Move minMove = null;
+            for (Board child : possibleBoards) {
+                BigInteger hash = getNextMoveHash(state, possibleMoves.get(child), child);
+                int temp = alphaBeta(hash, depth - 1, alpha, beta);
+                if (temp < beta) {
+                    beta = temp;
+                    minMove = possibleMoves.get(child);
+                }
+                if (alpha >= beta) {
+                    insertTranspositionTableCell(hash, alpha, beta, null, minMove, depth, board);
+                    return alpha;
+                }
+            }
+            insertTranspositionTableCell(state, alpha, beta, null, minMove, depth, board);
+            return beta;
         }
     }
 
+    public void performThinkingAndMove(){
+        Board board = gameboard.getCoppyOfOfficialBoard();
+        BigInteger hash = countHashFunction(board);
+        minMaxAlphaBeta(hash, 15);
+        TranspositionTableCell transpositionTableCell = this.transpositionTable.get(hash);
+        if(this.player.equals(Player.black))
+            gameboard.performWhitePlayerMovement(transpositionTableCell.getBetaMove());
+        else
+            gameboard.performBlackPlayerMovement(transpositionTableCell.getBetaMove());
+    }
 
 }
