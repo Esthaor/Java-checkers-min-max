@@ -1091,7 +1091,9 @@ public class Board {
                     int beatRow = -1, beatColumn = -1;
                     while (i >= 0 && j >= 0) {
                         if (this.board[i][j].equals(FieldState.empty)) {
-                            if (thisQueenCanBeatMore) {
+                            if (thisQueenCanBeatMore && !wasBeating) {
+                                i--;
+                                j--;
                                 continue;
                             }
                             Move move = new Move();
@@ -1125,7 +1127,9 @@ public class Board {
                     beatColumn = -1;
                     while (i >= 0 && j < 8) {
                         if (this.board[i][j].equals(FieldState.empty)) {
-                            if (thisQueenCanBeatMore) {
+                            if (thisQueenCanBeatMore && !wasBeating) {
+                                i--;
+                                j++;
                                 continue;
                             }
                             Move move = new Move();
@@ -1159,7 +1163,9 @@ public class Board {
                     beatColumn = -1;
                     while (i < 8 && j >= 0) {
                         if (this.board[i][j].equals(FieldState.empty)) {
-                            if (thisQueenCanBeatMore) {
+                            if (thisQueenCanBeatMore && !wasBeating) {
+                                i++;
+                                j--;
                                 continue;
                             }
                             Move move = new Move();
@@ -1193,7 +1199,9 @@ public class Board {
                     wasBeating = false;
                     while (i < 8 && j < 8) {
                         if (this.board[i][j].equals(FieldState.empty)) {
-                            if (thisQueenCanBeatMore) {
+                            if (thisQueenCanBeatMore && !wasBeating) {
+                                i++;
+                                j++;
                                 continue;
                             }
                             Move move = new Move();

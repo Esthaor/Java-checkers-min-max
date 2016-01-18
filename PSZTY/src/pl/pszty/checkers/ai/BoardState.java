@@ -25,6 +25,8 @@ public class BoardState {
     private Path rnTableFile;
     private Gameboard gameboard;
     private Player player;
+    private int hashCount;
+    private int boardCount;
 
     public BoardState() {
         String os = System.getProperty("os.name");
@@ -53,6 +55,8 @@ public class BoardState {
         this.gameboard = Gameboard.getInstance();
         this.player = gameboard.getHumanPlayer();
         this.transpositionTable = new HashMap<>();
+        this.boardCount = 0;
+        this.hashCount = 0;
 
         // TEST 
         long[][] test = {{0x79ad695501e7d1e8L, 0x8249a47aee0e41f7L, 0x637a7780decfc0d9L, 0x19fc8a768cf4b6d4L, 0x7bcbc38da25a7f3cL},
@@ -152,13 +156,18 @@ public class BoardState {
 //        return Long.parseUnsignedLong(sum.toString());
 
         FieldState[][] fieldStates = board.getBoard();
-        long sum = 0;
+        BigInteger sum = new BigInteger("0");
+        BigInteger pow = new BigInteger("2");
+        pow = pow.pow(64);
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
-                sum ^= this.randomNumberedTable[(row + column) / 2][fieldStates[row][column].getValue()];
+                String toUnsignedString = Long.toUnsignedString(this.randomNumberedTable[(row + column) / 2][fieldStates[row][column].getValue()]);
+                BigInteger bigInteger = new BigInteger(toUnsignedString);
+                sum = sum.add(bigInteger);
+                sum = sum.mod(pow);
             }
         }
-        return sum;
+        return Long.parseUnsignedLong(sum.toString());
     }
 
     private long getNextMoveHash(long hash, Move nextMove, Board board) {
@@ -193,15 +202,19 @@ public class BoardState {
         TranspositionTableCell transpositionTableCell = new TranspositionTableCell(alpha, beta, alphaMove, betaMove, depth, board);
         if (!transpositionTable.containsKey(hash)) {
             transpositionTable.put(hash, new LinkedList<>());
+            hashCount++;
         }
         List<TranspositionTableCell> get = transpositionTable.get(hash);
         for (TranspositionTableCell cell : get) {
             if (cell.getBoard().equals(board)) {
                 get.remove(cell);
+                transpositionTable.remove(hash);
+                transpositionTable.put(hash, get);
                 break;
             }
         }
         transpositionTable.get(hash).add(transpositionTableCell);
+        boardCount++;
     }
 
     public void minMaxAlphaBeta(long state, Board board, int depth) {
@@ -214,7 +227,7 @@ public class BoardState {
             }
         }
         if (transpositionTableCell != null) {
-            if (transpositionTableCell.getSearchingDepth() >= 3) {
+            if (transpositionTableCell.getSearchingDepth() >= 2) {
                 return;
             }
         }
@@ -249,7 +262,7 @@ public class BoardState {
             Set<Board> possibleBoards = possibleMoves.keySet();
             Move maxMove = null;
             for (Board child : possibleBoards) {
-                long hash = getNextMoveHash(state, possibleMoves.get(child), board);
+                long hash = countHashFunction(child); //getNextMoveHash(state, possibleMoves.get(child), board);
                 int temp = alphaBeta(hash, child, depth - 1, alpha, beta);
                 if (temp >= alpha) {
                     alpha = temp;
@@ -268,7 +281,7 @@ public class BoardState {
             Set<Board> possibleBoards = possibleMoves.keySet();
             Move minMove = null;
             for (Board child : possibleBoards) {
-                long hash = getNextMoveHash(state, possibleMoves.get(child), board);
+                long hash = countHashFunction(child);//(state, possibleMoves.get(child), board);
                 int temp = alphaBeta(hash, child, depth - 1, alpha, beta);
                 if (temp <= beta) {
                     beta = temp;
@@ -287,21 +300,41 @@ public class BoardState {
     public void performThinkingAndMove() {
         Board board = gameboard.getCoppyOfOfficialBoard();
         long hash = countHashFunction(board);
-        minMaxAlphaBeta(hash, gameboard.getCoppyOfOfficialBoard(), 6);
+        minMaxAlphaBeta(hash, gameboard.getCoppyOfOfficialBoard(), 8);
         TranspositionTableCell transpositionTableCell = null;
 
         List<TranspositionTableCell> get = this.transpositionTable.get(hash);
+        int sameBoard = 0;
+        int sameOnGoodHash = 0;
+        TranspositionTableCell temp = null;
         for (TranspositionTableCell ttc : get) {
             if (ttc.getBoard().equals(board)) {
+                sameOnGoodHash++;
                 transpositionTableCell = ttc;
                 if (this.player.equals(Player.black)) {
                     gameboard.performWhitePlayerMovement(transpositionTableCell.getBetaMove());
                 } else {
-                    gameboard.performBlackPlayerMovement(transpositionTableCell.getBetaMove());
-                    return;
+                    System.out.println(transpositionTableCell.getSearchingDepth());
+                    System.out.println("HASH: " + this.hashCount);
+                    System.out.println("BOARD: " + this.boardCount);
+
+                    Set<Long> keySet = this.transpositionTable.keySet();
+                    for (long hashyk : keySet) {
+                        List<TranspositionTableCell> lista = this.transpositionTable.get(hashyk);
+                        for (TranspositionTableCell cell : lista) {
+                            if (cell.getBoard().equals(gameboard.getCoppyOfOfficialBoard())) {
+                                sameBoard++;
+                            }
+                        }
+                    }
+                    System.out.println("SAME BOARD: " + sameBoard);
+                    temp = ttc;
                 }
             }
         }
-
+        System.out.println("Same on good hash: " + sameOnGoodHash);
+        if (temp != null) {
+            gameboard.performBlackPlayerMovement(temp.getBetaMove());
+        }
     }
 }

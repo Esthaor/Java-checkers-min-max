@@ -472,6 +472,8 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                         if (!mainBoard.getWinner().equals(Player.none)) {
                             changeButton.setSelected(true);
                         }
+                        
+                        //WYWALA PRZY KOŃCU GRY, DO JĘDRZEJA
                         while (activePlayer.equals(Player.black)) {
                             boardState.performThinkingAndMove();
                             redrawFigures();
