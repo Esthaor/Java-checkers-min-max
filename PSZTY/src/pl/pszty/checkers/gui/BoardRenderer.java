@@ -17,12 +17,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.System.*;
+import pl.pszty.checkers.ai.BoardState;
 
 /**
- * Created by jedrek on 13.01.16.
- * Klasa GUI
+ * Created by jedrek on 13.01.16. Klasa GUI
  */
-
 public class BoardRenderer extends JFrame implements MouseListener, MouseMotionListener {
 
     Gameboard mainBoard = Gameboard.getInstance();
@@ -45,6 +44,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     static private MyGlassPane myGlassPane;
     JMenuBar menuBar;
     JCheckBox changeButton;
+    private BoardState boardState;
 
     public BoardRenderer() {
         try {
@@ -74,7 +74,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         this.pack();
         this.setLocationRelativeTo(null);
         this.setVisible(true);
-
+        boardState = new BoardState();
     }
 
     class MyGlassPane extends JComponent implements ItemListener {
@@ -82,7 +82,6 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         public void itemStateChanged(ItemEvent e) {
             setVisible(e.getStateChange() == ItemEvent.SELECTED);
         }
-
 
         public MyGlassPane(AbstractButton aButton, Container contentPane) {
             CBListener listener = new CBListener(aButton, menuBar, this, contentPane);
@@ -92,6 +91,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     }
 
     class CBListener extends MouseInputAdapter {
+
         Toolkit toolkit;
         Component liveButton;
         JMenuBar menuBar;
@@ -99,7 +99,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         Container contentPane;
 
         public CBListener(Component liveButton, JMenuBar menuBar,
-                          MyGlassPane glassPane, Container contentPane) {
+                MyGlassPane glassPane, Container contentPane) {
             toolkit = Toolkit.getDefaultToolkit();
             this.liveButton = liveButton;
             this.glassPane = glassPane;
@@ -137,7 +137,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 
         //A basic implementation of redispatching events.
         private void redispatchMouseEvent(MouseEvent e,
-                                          boolean repaint) {
+                boolean repaint) {
             Point glassPanePoint = e.getPoint();
             Container container = contentPane;
             Point containerPoint = SwingUtilities.convertPoint(
@@ -159,8 +159,8 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 glassPane.setVisible(true);
                 //The mouse event is probably over the content pane.
                 //Find out exactly which component it's over.
-                Component component =
-                        SwingUtilities.getDeepestComponentAt(
+                Component component
+                        = SwingUtilities.getDeepestComponentAt(
                                 container,
                                 containerPoint.x,
                                 containerPoint.y);
@@ -211,8 +211,8 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         c.gridx = 1;
         c.gridy = 0;
         c.weightx = 0.6;
-        changeButton =
-                new JCheckBox("Glass pane \"visible\"");
+        changeButton
+                = new JCheckBox("Glass pane \"visible\"");
         changeButton.setSelected(false);
 
         getContentPane().add(changeButton, c);
@@ -258,7 +258,6 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         guiContainer.setPreferredSize(boardSize);
         GridBagConstraints c = new GridBagConstraints();
 
-
         c.weightx = 0.5;
         c.weighty = 1;
         c.gridx = 0;
@@ -290,7 +289,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         mainBoard = Gameboard.getInstance();
         Board copyOfOfficialBoard = mainBoard.getCoppyOfOfficialBoard();
         FieldState[][] fields = copyOfOfficialBoard.getBoard();
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (fields[i][j].equals(FieldState.empty)) {
                     continue;
@@ -308,13 +307,14 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 JPanel panel = (JPanel) board.getComponent(i * 8 + j);
                 panel.add(figure);
             }
+        }
     }
 
     public void redrawFigures() {
         mainBoard = Gameboard.getInstance();
         Board copyOfOfficialBoard = mainBoard.getCoppyOfOfficialBoard();
         FieldState[][] fields = copyOfOfficialBoard.getBoard();
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (fields[i][j].equals(FieldState.empty)) {
                     JPanel panel = (JPanel) board.getComponent(i * 8 + j);
@@ -336,6 +336,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 panel.add(figure);
                 panel.revalidate();
             }
+        }
     }
 
     public JMenuBar createMenuBar() {
@@ -373,7 +374,6 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         return menuBar;
     }
 
-
     @Override
     public void mouseClicked(MouseEvent e) {
 
@@ -384,7 +384,9 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         figure = null;
         Component component = board.findComponentAt(e.getX(), e.getY());
         sourceField = (JPanel) component.getParent();
-        if (component instanceof JPanel) return;
+        if (component instanceof JPanel) {
+            return;
+        }
 
         sourceMoveLocation = component.getParent().getLocation();
 
@@ -400,7 +402,9 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     @Override
     public void mouseReleased(MouseEvent e) {
         guiContainer.setCursor(null);
-        if (figure == null) return;
+        if (figure == null) {
+            return;
+        }
 
         figure.setVisible(false);
 
@@ -442,19 +446,23 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 }
 
                 if (activePlayer.equals(Player.black)) {
-                    if (mainBoard.performBlackPlayerMovement(move)) {
-                        redrawFigures();
-                        activePlayer = mainBoard.getActivePlayer();
-                        updateGameInfo();
-                        out.println(activePlayer);
-                        if (!mainBoard.getWinner().equals(Player.none)) {
-                            changeButton.setSelected(true);
-                        }
-                    } else {
-                        out.println("chujnia");
-                        sourceField.add(figure);
-                        figure.setVisible(true);
-                    }
+//                    if (mainBoard.performBlackPlayerMovement(move)) {
+//                        redrawFigures();
+//                        activePlayer = mainBoard.getActivePlayer();
+//                        updateGameInfo();
+//                        out.println(activePlayer);
+//                        if (!mainBoard.getWinner().equals(Player.none)) {
+//                            changeButton.setSelected(true);
+//                        }
+//                    } else {
+//                        out.println("chujnia");
+//                        sourceField.add(figure);
+//                        figure.setVisible(true);
+//                    }
+//                    boardState.performThinkingAndMove();
+//                    redrawFigures();
+//                    activePlayer = mainBoard.getActivePlayer();
+//                    updateGameInfo();
                 } else {
                     if (mainBoard.performWhitePlayerMovement(move)) {
                         redrawFigures();
@@ -463,6 +471,14 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                         out.println(activePlayer);
                         if (!mainBoard.getWinner().equals(Player.none)) {
                             changeButton.setSelected(true);
+                        }
+                        
+                        //WYWALA PRZY KOŃCU GRY, DO JĘDRZEJA
+                        while (activePlayer.equals(Player.black)) {
+                            boardState.performThinkingAndMove();
+                            redrawFigures();
+                            activePlayer = mainBoard.getActivePlayer();
+                            updateGameInfo();
                         }
                     } else {
                         out.println("chujnia");
@@ -487,7 +503,9 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (figure == null) return;
+        if (figure == null) {
+            return;
+        }
 
         int x = e.getX() + xCorrection;
         int xMax = guiContainer.getWidth() - figure.getWidth();

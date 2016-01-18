@@ -5,6 +5,9 @@
  */
 package pl.pszty.checkers.core;
 
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -517,7 +520,61 @@ public class BoardTest {
         Player tellMeTheWinner = board.tellMeTheWinner();
 
         assertEquals(Player.black, tellMeTheWinner);
+
+        System.out.println("OK");
+    }
+
+    /**
+     * Test of equals method, of class Board.
+     */
+    @Test
+    public void testEquals() {
+        System.out.println("Test equals");
+        Board board = new Board();
+        Board board1 = new Board();
+
+        boolean equals = board.equals(board1);
+        boolean forSure = true;
+        for (int row = 0; row < 8; row++) {
+            for (int column = 0; column < 8; column++) {
+                if (!board.getBoard()[row][column].equals(board1.getBoard()[row][column])) {
+                    forSure = false;
+                }
+            }
+        }
+        if (!board.getActivePlayer().equals(board1.getActivePlayer())) {
+            forSure = false;
+        }
+        assertEquals(forSure, equals);
+
+        Move move = new Move();
+
+        try {
+            move.setFrom(5, 0);
+            move.setTo(4, 1);
+            board.performMovement(move);
+        } catch (Exception ex) {
+            Logger.getLogger(BoardTest.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        board1 = new Board(board);
+        
+        
+        equals = board.equals(board1);
+        forSure = true;
+        for (int row = 0; row < 8; row++) {
+            for (int column = 0; column < 8; column++) {
+                if (!board.getBoard()[row][column].equals(board1.getBoard()[row][column])) {
+                    forSure = false;
+                }
+            }
+        }
+        if (!board.getActivePlayer().equals(board1.getActivePlayer())) {
+            forSure = false;
+        }
+        assertEquals(forSure, equals);
         
         System.out.println("OK");
     }
+
 }
