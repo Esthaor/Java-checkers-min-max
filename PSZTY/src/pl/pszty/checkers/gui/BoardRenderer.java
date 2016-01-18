@@ -459,10 +459,10 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 //                        sourceField.add(figure);
 //                        figure.setVisible(true);
 //                    }
-                   boardState.performThinkingAndMove();
-                    redrawFigures();
-                    activePlayer = mainBoard.getActivePlayer();
-                    updateGameInfo();
+//                    boardState.performThinkingAndMove();
+//                    redrawFigures();
+//                    activePlayer = mainBoard.getActivePlayer();
+//                    updateGameInfo();
                 } else {
                     if (mainBoard.performWhitePlayerMovement(move)) {
                         redrawFigures();
@@ -471,6 +471,12 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                         out.println(activePlayer);
                         if (!mainBoard.getWinner().equals(Player.none)) {
                             changeButton.setSelected(true);
+                        }
+                        while (activePlayer.equals(Player.black)) {
+                            boardState.performThinkingAndMove();
+                            redrawFigures();
+                            activePlayer = mainBoard.getActivePlayer();
+                            updateGameInfo();
                         }
                     } else {
                         out.println("chujnia");
