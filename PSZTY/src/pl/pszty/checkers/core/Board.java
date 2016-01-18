@@ -16,6 +16,9 @@ import pl.pszty.checkers.enums.Player;
 public class Board {
 
     private final int DRAW_CONDITION = 15;
+    private final int PAWN_VALUE = 5;
+    private final int QUEEN_VALUE = 50;
+    private final int BEATING_POSSIBILITY = 30;
 
     private FieldState board[][];
     private Player activePlayer;
@@ -42,14 +45,15 @@ public class Board {
 
     @Override
     public boolean equals(Object other) {
-        FieldState[][] otherboBoard = ((Board)other).getBoard();
+        FieldState[][] otherboBoard = ((Board) other).getBoard();
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
-                if (!this.board[row][column].equals(otherboBoard[row][column]))
+                if (!this.board[row][column].equals(otherboBoard[row][column])) {
                     return false;
+                }
             }
         }
-        return this.activePlayer.equals(((Board)other).getActivePlayer());
+        return this.activePlayer.equals(((Board) other).getActivePlayer());
     }
 
     /**
@@ -198,8 +202,8 @@ public class Board {
                         }
                         return false;
                     case white:
-                        if (!this.board[betweenRow][betweenColumn].equals(FieldState.blackPawn)
-                                || !this.board[betweenRow][betweenColumn].equals(FieldState.blackQueen)) {
+                        if (this.board[betweenRow][betweenColumn].equals(FieldState.blackPawn)
+                                || this.board[betweenRow][betweenColumn].equals(FieldState.blackQueen)) {
                             break;
                         }
                         return false;
@@ -643,6 +647,173 @@ public class Board {
         return false;
     }
 
+    private int pawnBeatCount(int row, int column) {
+        FieldState opositePawn;
+        FieldState opositeQueen;
+        int count = 0;
+
+        if (this.board[row][column].equals(FieldState.blackPawn)) {
+            opositePawn = FieldState.whitePawn;
+            opositeQueen = FieldState.whiteQueen;
+        } else {
+            opositePawn = FieldState.blackPawn;
+            opositeQueen = FieldState.blackQueen;
+        }
+
+        if (this.board[row][column].equals(FieldState.empty)) {
+            throw new RuntimeException("This field is empty!");
+        }
+
+        if ((row - 2) >= 0) {
+            if ((column - 2) >= 0) {
+                if (this.board[row - 2][column - 2].equals(FieldState.empty)
+                        && (this.board[row - 1][column - 1].equals(opositePawn)
+                        || (this.board[row - 1][column - 1].equals(opositeQueen)))) {
+                    count++;
+                }
+            }
+            if ((column + 2) < 8) {
+                if (this.board[row - 2][column + 2].equals(FieldState.empty)
+                        && (this.board[row - 1][column + 1].equals(opositePawn)
+                        || (this.board[row - 1][column + 1].equals(opositeQueen)))) {
+                    count++;
+                }
+            }
+        }
+        if ((row + 2) < 8) {
+            if ((column - 2) >= 0) {
+                if (this.board[row + 2][column - 2].equals(FieldState.empty)
+                        && (this.board[row + 1][column - 1].equals(opositePawn)
+                        || (this.board[row + 1][column - 1].equals(opositeQueen)))) {
+                    count++;
+                }
+            }
+            if ((column + 2) < 8) {
+                if (this.board[row + 2][column + 2].equals(FieldState.empty)
+                        && (this.board[row + 1][column + 1].equals(opositePawn)
+                        || (this.board[row + 1][column + 1].equals(opositeQueen)))) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private int queenBeatCount(int row, int column) {
+        int count = 0;
+        FieldState opositePawn;
+        FieldState opositeQueen;
+        FieldState myPawn;
+        FieldState myQueen;
+        int testedRow, testedColumn;
+
+        if (this.board[row][column].equals(FieldState.blackQueen)) {
+            opositePawn = FieldState.whitePawn;
+            opositeQueen = FieldState.whiteQueen;
+            myPawn = FieldState.blackPawn;
+            myQueen = FieldState.blackQueen;
+        } else {
+            opositePawn = FieldState.blackPawn;
+            opositeQueen = FieldState.blackQueen;
+            myPawn = FieldState.whitePawn;
+            myQueen = FieldState.whiteQueen;
+        }
+
+        if (this.board[row][column].equals(FieldState.empty)) {
+            throw new RuntimeException("This field is empty!");
+        }
+
+        testedColumn = column - 1;
+        testedRow = row - 1;
+
+        while ((testedColumn >= 0) && (testedRow >= 0)) {
+            if (this.board[testedRow][testedColumn].equals(myPawn)
+                    || this.board[testedRow][testedColumn].equals(myQueen)) {
+                break;
+            }
+            if (this.board[testedRow][testedColumn].equals(opositePawn)
+                    || this.board[testedRow][testedColumn].equals(opositeQueen)) {
+                testedColumn--;
+                testedRow--;
+                if ((testedColumn >= 0) && (testedRow >= 0)) {
+                    if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+                        count++;
+                    }
+                }
+            }
+            testedColumn--;
+            testedRow--;
+        }
+
+        testedColumn = column - 1;
+        testedRow = row + 1;
+
+        while ((testedColumn >= 0) && (testedRow < 8)) {
+            if (this.board[testedRow][testedColumn].equals(myPawn)
+                    || this.board[testedRow][testedColumn].equals(myQueen)) {
+                break;
+            }
+            if (this.board[testedRow][testedColumn].equals(opositePawn)
+                    || this.board[testedRow][testedColumn].equals(opositeQueen)) {
+                testedColumn--;
+                testedRow++;
+                if ((testedColumn >= 0) && (testedRow < 8)) {
+                    if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+                        count++;
+                    }
+                }
+            }
+            testedColumn--;
+            testedRow++;
+        }
+
+        testedColumn = column + 1;
+        testedRow = row - 1;
+
+        while ((testedColumn < 8) && (testedRow >= 0)) {
+            if (this.board[testedRow][testedColumn].equals(myPawn)
+                    || this.board[testedRow][testedColumn].equals(myQueen)) {
+                break;
+            }
+            if (this.board[testedRow][testedColumn].equals(opositePawn)
+                    || this.board[testedRow][testedColumn].equals(opositeQueen)) {
+                testedColumn++;
+                testedRow--;
+                if ((testedColumn < 8) && (testedRow >= 0)) {
+                    if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+                        count++;
+                    }
+                }
+            }
+            testedColumn++;
+            testedRow--;
+        }
+
+        testedColumn = column + 1;
+        testedRow = row + 1;
+
+        while ((testedColumn < 8) && (testedRow < 8)) {
+            if (this.board[testedRow][testedColumn].equals(myPawn)
+                    || this.board[testedRow][testedColumn].equals(myQueen)) {
+                break;
+            }
+            if (this.board[testedRow][testedColumn].equals(opositePawn)
+                    || this.board[testedRow][testedColumn].equals(opositeQueen)) {
+                testedColumn++;
+                testedRow++;
+                if ((testedColumn < 8) && (testedRow < 8)) {
+                    if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+                        count++;
+                    }
+                }
+            }
+            testedColumn++;
+            testedRow++;
+        }
+
+        return count;
+    }
+
     public Player tellMeTheWinner() {
 
         if (this.movesWithoutBeatingCounter == DRAW_CONDITION) {
@@ -699,8 +870,46 @@ public class Board {
     }
 
     public int getBoardEvaulation() {
-        //@TODO: 15.01.2016 - Funkcja oceniajaca sytuacje na planszy
-        return 0;
+        int value = 0;
+        Player humanPlayer = Gameboard.getInstance().getHumanPlayer();
+        FieldState myPawn;
+        FieldState myQueen;
+        FieldState opponentPawn;
+        FieldState opponentQueen;
+
+        if (humanPlayer.equals(Player.white)) {
+            myPawn = FieldState.whitePawn;
+            myQueen = FieldState.whiteQueen;
+            opponentPawn = FieldState.blackPawn;
+            opponentQueen = FieldState.blackQueen;
+        } else {
+            myPawn = FieldState.blackPawn;
+            myQueen = FieldState.blackQueen;
+            opponentPawn = FieldState.whitePawn;
+            opponentQueen = FieldState.whiteQueen;
+        }
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (this.board[i][j].equals(myPawn)) {
+                    value += PAWN_VALUE;
+                    value += BEATING_POSSIBILITY * (pawnBeatCount(i, j));
+                }// END OF MY PAWN
+                else if (this.board[i][j].equals(opponentPawn)) {
+                    value -= PAWN_VALUE;
+                    value -= BEATING_POSSIBILITY * (pawnBeatCount(i, j));
+                }// END OF ENEMY PAWN
+                else if (this.board[i][j].equals(myQueen)) {
+                    value += QUEEN_VALUE;
+                    value += BEATING_POSSIBILITY * (queenBeatCount(i, j));
+                } // END OF MY QUEEN
+                else if (this.board[i][j].equals(opponentQueen)) {
+                    value -= QUEEN_VALUE;
+                    value -= BEATING_POSSIBILITY * (queenBeatCount(i, j));
+                } // END OF ENEMY QUEEN
+            }
+        }
+        return value;
     }
 
     /**
@@ -876,11 +1085,15 @@ public class Board {
                 } // End of checking pawn
                 if (this.board[row][column].equals(myQueen)) {
                     // Normal moves of queen
+                    boolean thisQueenCanBeatMore = canThisQueenBeatMore(row, column);
                     int i = row - 1, j = column - 1;
                     boolean wasBeating = false;
                     int beatRow = -1, beatColumn = -1;
                     while (i >= 0 && j >= 0) {
                         if (this.board[i][j].equals(FieldState.empty)) {
+                            if (thisQueenCanBeatMore) {
+                                continue;
+                            }
                             Move move = new Move();
                             try {
                                 move.setFrom(row, column);
@@ -912,6 +1125,9 @@ public class Board {
                     beatColumn = -1;
                     while (i >= 0 && j < 8) {
                         if (this.board[i][j].equals(FieldState.empty)) {
+                            if (thisQueenCanBeatMore) {
+                                continue;
+                            }
                             Move move = new Move();
                             try {
                                 move.setFrom(row, column);
@@ -943,6 +1159,9 @@ public class Board {
                     beatColumn = -1;
                     while (i < 8 && j >= 0) {
                         if (this.board[i][j].equals(FieldState.empty)) {
+                            if (thisQueenCanBeatMore) {
+                                continue;
+                            }
                             Move move = new Move();
                             try {
                                 move.setFrom(row, column);
@@ -974,6 +1193,9 @@ public class Board {
                     wasBeating = false;
                     while (i < 8 && j < 8) {
                         if (this.board[i][j].equals(FieldState.empty)) {
+                            if (thisQueenCanBeatMore) {
+                                continue;
+                            }
                             Move move = new Move();
                             try {
                                 move.setFrom(row, column);
