@@ -1,5 +1,6 @@
 package pl.pszty.checkers.core;
 
+import pl.pszty.checkers.ai.BoardState;
 import pl.pszty.checkers.enums.Player;
 
 /**
@@ -15,6 +16,7 @@ public final class Gameboard {
     private Board officialBoard;
     private Player winner;
     private Player humanPlayer;
+    private BoardState boardState;
 
     private static Gameboard instance = null;
 
@@ -57,6 +59,10 @@ public final class Gameboard {
         return false;
     }
 
+    public void setBoardState(BoardState boardState) {
+        this.boardState = boardState;
+    }
+
     public void displayOfficialBoard() {
         officialBoard.displayBoard();
     }
@@ -81,4 +87,7 @@ public final class Gameboard {
         this.humanPlayer = humanPlayer;
     }
 
+    public BoardState getBoardState() {
+        return boardState;
+    }
 }

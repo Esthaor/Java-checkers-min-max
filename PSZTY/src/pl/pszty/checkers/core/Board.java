@@ -40,6 +40,18 @@ public class Board {
         }
     }
 
+    @Override
+    public boolean equals(Object other) {
+        FieldState[][] otherboBoard = ((Board)other).getBoard();
+        for (int row = 0; row < 8; row++) {
+            for (int column = 0; column < 8; column++) {
+                if (!this.board[row][column].equals(otherboBoard[row][column]))
+                    return false;
+            }
+        }
+        return this.activePlayer.equals(((Board)other).getActivePlayer());
+    }
+
     /**
      * Setting board to beginning game state.
      */
@@ -740,6 +752,7 @@ public class Board {
                                 Move move = new Move();
                                 try {
                                     move.setFrom(row, column);
+                                    move.setBeatingCell(row - 1, column - 1);
                                     move.setTo(row - 2, column - 2);
                                 } catch (Exception e) {
                                 }
@@ -755,6 +768,7 @@ public class Board {
                                 Move move = new Move();
                                 try {
                                     move.setFrom(row, column);
+                                    move.setBeatingCell(row - 1, column + 1);
                                     move.setTo(row - 2, column + 2);
                                 } catch (Exception e) {
                                 }
@@ -772,6 +786,7 @@ public class Board {
                                 Move move = new Move();
                                 try {
                                     move.setFrom(row, column);
+                                    move.setBeatingCell(row + 1, column - 1);
                                     move.setTo(row + 2, column - 2);
                                 } catch (Exception e) {
                                 }
@@ -787,6 +802,7 @@ public class Board {
                                 Move move = new Move();
                                 try {
                                     move.setFrom(row, column);
+                                    move.setBeatingCell(row + 1, column + 1);
                                     move.setTo(row + 2, column + 2);
                                 } catch (Exception e) {
                                 }
@@ -796,60 +812,64 @@ public class Board {
                             }
                         }
                     }
-                    if (this.board[row][column].equals(FieldState.blackPawn) && (row < 7)) {
-                        if (column > 0) {
-                            if (this.board[row + 1][column - 1].equals(FieldState.empty)) {
-                                Move move = new Move();
-                                try {
-                                    move.setFrom(row, column);
-                                    move.setTo(row + 1, column - 1);
-                                } catch (Exception e) {
-                                }
-                                Board possibleBoard = new Board(this);
-                                possibleBoard.performMovement(move);
-                                possibleMoves.put(possibleBoard, move);
-                            }
-                        }
-                        if (column < 7) {
-                            if (this.board[row + 1][column + 1].equals(FieldState.empty)) {
-                                Move move = new Move();
-                                try {
-                                    move.setFrom(row, column);
-                                    move.setTo(row + 1, column + 1);
-                                } catch (Exception e) {
-                                }
-                                Board possibleBoard = new Board(this);
-                                possibleBoard.performMovement(move);
-                                possibleMoves.put(possibleBoard, move);
-                            }
-                        }
-                    }
 
-                    if (this.board[row][column].equals(FieldState.whitePawn) && (row > 0)) {
-                        if (column > 0) {
-                            if (this.board[row - 1][column - 1].equals(FieldState.empty)) {
-                                Move move = new Move();
-                                try {
-                                    move.setFrom(row, column);
-                                    move.setTo(row - 1, column - 1);
-                                } catch (Exception e) {
+                    if ((this.board[row][column].equals(FieldState.blackPawn) || this.board[row][column].equals(FieldState.whitePawn))
+                            && !wasTherePossibleBeating()) {
+                        if (this.board[row][column].equals(FieldState.blackPawn) && (row < 7) && this.activePlayer.equals(Player.black)) {
+                            if (column > 0) {
+                                if (this.board[row + 1][column - 1].equals(FieldState.empty)) {
+                                    Move move = new Move();
+                                    try {
+                                        move.setFrom(row, column);
+                                        move.setTo(row + 1, column - 1);
+                                    } catch (Exception e) {
+                                    }
+                                    Board possibleBoard = new Board(this);
+                                    possibleBoard.performMovement(move);
+                                    possibleMoves.put(possibleBoard, move);
                                 }
-                                Board possibleBoard = new Board(this);
-                                possibleBoard.performMovement(move);
-                                possibleMoves.put(possibleBoard, move);
+                            }
+                            if (column < 7) {
+                                if (this.board[row + 1][column + 1].equals(FieldState.empty)) {
+                                    Move move = new Move();
+                                    try {
+                                        move.setFrom(row, column);
+                                        move.setTo(row + 1, column + 1);
+                                    } catch (Exception e) {
+                                    }
+                                    Board possibleBoard = new Board(this);
+                                    possibleBoard.performMovement(move);
+                                    possibleMoves.put(possibleBoard, move);
+                                }
                             }
                         }
-                        if (column < 7) {
-                            if (this.board[row - 1][column + 1].equals(FieldState.empty)) {
-                                Move move = new Move();
-                                try {
-                                    move.setFrom(row, column);
-                                    move.setTo(row - 1, column + 1);
-                                } catch (Exception e) {
+
+                        if (this.board[row][column].equals(FieldState.whitePawn) && (row > 0) && this.activePlayer.equals(Player.white)) {
+                            if (column > 0) {
+                                if (this.board[row - 1][column - 1].equals(FieldState.empty)) {
+                                    Move move = new Move();
+                                    try {
+                                        move.setFrom(row, column);
+                                        move.setTo(row - 1, column - 1);
+                                    } catch (Exception e) {
+                                    }
+                                    Board possibleBoard = new Board(this);
+                                    possibleBoard.performMovement(move);
+                                    possibleMoves.put(possibleBoard, move);
                                 }
-                                Board possibleBoard = new Board(this);
-                                possibleBoard.performMovement(move);
-                                possibleMoves.put(possibleBoard, move);
+                            }
+                            if (column < 7) {
+                                if (this.board[row - 1][column + 1].equals(FieldState.empty)) {
+                                    Move move = new Move();
+                                    try {
+                                        move.setFrom(row, column);
+                                        move.setTo(row - 1, column + 1);
+                                    } catch (Exception e) {
+                                    }
+                                    Board possibleBoard = new Board(this);
+                                    possibleBoard.performMovement(move);
+                                    possibleMoves.put(possibleBoard, move);
+                                }
                             }
                         }
                     }
@@ -857,18 +877,29 @@ public class Board {
                 if (this.board[row][column].equals(myQueen)) {
                     // Normal moves of queen
                     int i = row - 1, j = column - 1;
+                    boolean wasBeating = false;
+                    int beatRow = -1, beatColumn = -1;
                     while (i >= 0 && j >= 0) {
                         if (this.board[i][j].equals(FieldState.empty)) {
                             Move move = new Move();
                             try {
                                 move.setFrom(row, column);
                                 move.setTo(i, j);
+                                if (wasBeating) {
+                                    move.setBeatingCell(beatRow, beatColumn);
+                                }
                             } catch (Exception e) {
                             }
                             Board possibleBoard = new Board(this);
                             possibleBoard.performMovement(move);
                             possibleMoves.put(possibleBoard, move);
                         } else if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                            break;
+                        } else if (!wasBeating) {
+                            wasBeating = true;
+                            beatRow = i;
+                            beatColumn = j;
+                        } else {
                             break;
                         }
                         i--;
@@ -876,18 +907,30 @@ public class Board {
                     }
                     i = row - 1;
                     j = column + 1;
+                    wasBeating = false;
+                    beatRow = -1;
+                    beatColumn = -1;
                     while (i >= 0 && j < 8) {
                         if (this.board[i][j].equals(FieldState.empty)) {
                             Move move = new Move();
                             try {
                                 move.setFrom(row, column);
                                 move.setTo(i, j);
+                                if (wasBeating) {
+                                    move.setBeatingCell(beatRow, beatColumn);
+                                }
                             } catch (Exception e) {
                             }
                             Board possibleBoard = new Board(this);
                             possibleBoard.performMovement(move);
                             possibleMoves.put(possibleBoard, move);
                         } else if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                            break;
+                        } else if (!wasBeating) {
+                            wasBeating = true;
+                            beatRow = i;
+                            beatColumn = j;
+                        } else {
                             break;
                         }
                         i--;
@@ -895,12 +938,18 @@ public class Board {
                     }
                     i = row + 1;
                     j = column - 1;
+                    wasBeating = false;
+                    beatRow = -1;
+                    beatColumn = -1;
                     while (i < 8 && j >= 0) {
                         if (this.board[i][j].equals(FieldState.empty)) {
                             Move move = new Move();
                             try {
                                 move.setFrom(row, column);
                                 move.setTo(i, j);
+                                if (wasBeating) {
+                                    move.setBeatingCell(beatRow, beatColumn);
+                                }
                             } catch (Exception e) {
                             }
                             Board possibleBoard = new Board(this);
@@ -908,24 +957,42 @@ public class Board {
                             possibleMoves.put(possibleBoard, move);
                         } else if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
                             break;
+                        } else if (!wasBeating) {
+                            wasBeating = true;
+                            beatRow = i;
+                            beatColumn = j;
+                        } else {
+                            break;
                         }
                         i++;
                         j--;
                     }
                     i = row + 1;
                     j = column + 1;
+                    beatRow = -1;
+                    beatColumn = -1;
+                    wasBeating = false;
                     while (i < 8 && j < 8) {
                         if (this.board[i][j].equals(FieldState.empty)) {
                             Move move = new Move();
                             try {
                                 move.setFrom(row, column);
                                 move.setTo(i, j);
+                                if (wasBeating) {
+                                    move.setBeatingCell(beatRow, beatColumn);
+                                }
                             } catch (Exception e) {
                             }
                             Board possibleBoard = new Board(this);
                             possibleBoard.performMovement(move);
                             possibleMoves.put(possibleBoard, move);
                         } else if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                            break;
+                        } else if (!wasBeating) {
+                            wasBeating = true;
+                            beatRow = i;
+                            beatColumn = j;
+                        } else {
                             break;
                         }
                         i++;

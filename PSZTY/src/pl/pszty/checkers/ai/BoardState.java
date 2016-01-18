@@ -16,12 +16,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author Michal
- *         Created by Michal on 13.01.2016.
+ * @author Michal Created by Michal on 13.01.2016.
  */
 public class BoardState {
-    private BigInteger randomNumberedTable[][];
-    private Map<BigInteger, TranspositionTableCell> transpositionTable;
+
+    private long randomNumberedTable[][];
+    private Map<Long, List<TranspositionTableCell>> transpositionTable;
     private Path rnTableFile;
     private Gameboard gameboard;
     private Player player;
@@ -29,10 +29,11 @@ public class BoardState {
     public BoardState() {
         String os = System.getProperty("os.name");
 
-        if (os.startsWith("Windows"))
+        if (os.startsWith("Windows")) {
             this.rnTableFile = Paths.get("C:\\Users\\Public\\Documents\\bst.csv");
-        else
+        } else {
             this.rnTableFile = Paths.get("/tmp/bst.csv");
+        }
 
         if (this.rnTableFile.toFile().isFile()) {
             try {
@@ -58,12 +59,14 @@ public class BoardState {
         List<String> rnTableString = new ArrayList<>();
         String toList;
         Random random = new Random();
-        this.randomNumberedTable = new BigInteger[32][5];
+        this.randomNumberedTable = new long[32][5];
+        BigInteger temp;
         for (int row = 0; row < 32; row++) {
             toList = "";
             for (int column = 0; column < 5; column++) {
-                this.randomNumberedTable[row][column] = new BigInteger(64, random);
-                toList += (this.randomNumberedTable[row][column].toString() + ";");
+                temp = new BigInteger(64, random);
+                this.randomNumberedTable[row][column] = temp.longValue();
+                toList += (this.randomNumberedTable[row][column] + ";");
             }
             rnTableString.add(toList);
         }
@@ -72,87 +75,111 @@ public class BoardState {
 
     private List<String> readTable() throws IOException {
         List<String> fromFile = Files.lines(this.rnTableFile).map(line -> line.split(";")).flatMap(Arrays::stream).collect(Collectors.toList());
-        this.randomNumberedTable = new BigInteger[32][5];
+        this.randomNumberedTable = new long[32][5];
         int row = 0, column = 0;
         for (int index = 0; index < 160; index++) {
-            this.randomNumberedTable[row][column] = new BigInteger(fromFile.get(index));
-            System.out.println(this.randomNumberedTable[row][column].toString());
+            this.randomNumberedTable[row][column] = new Long(fromFile.get(index));
+            System.out.println(this.randomNumberedTable[row][column]);
             column = ++column % 5;
-            if (column == 0)
+            if (column == 0) {
                 ++row;
+            }
         }
         return fromFile;
     }
 
     public void printRnTable() {
         for (int row = 0; row < 32; row++) {
-            for (int column = 0; column < 5; column++)
-                System.out.print(this.randomNumberedTable[row][column].toString() + " ");
+            for (int column = 0; column < 5; column++) {
+                System.out.print(this.randomNumberedTable[row][column] + " ");
+            }
             System.out.println();
         }
     }
 
-    private BigInteger countHashFunction(Board board) {
+    private long countHashFunction(Board board) {
         FieldState[][] fieldStates = board.getBoard();
-        BigInteger sum = new BigInteger("0");
-        BigInteger power = new BigInteger("2");
-        power = power.pow(64);
+        long sum = 0;
         for (int row = 0; row < 8; row++) {
-            for (int column = 0; column < 4; column++) {
+            for (int column = 0; column < 8; column++) {
                 if ((row + column) % 2 != 0) {
-                    sum = (sum.add(this.randomNumberedTable[(row + column) / 2][fieldStates[row][column].getValue()])).mod(power);
+                    sum = (this.randomNumberedTable[(row + column) / 2][fieldStates[row][column].getValue()]);
                 }
             }
         }
         return sum;
     }
 
-    private BigInteger getNextMoveHash(BigInteger hash, Move nextMove, Board board) {
-        //@TODO XOR XOR XOR - > bedziemy:
+    private long getNextMoveHash(long hash, Move nextMove, Board board) {
+
         FieldState[][] fieldStates = board.getBoard();
         int fromColumn = nextMove.getFromColumn();
         int fromRow = nextMove.getFromRow();
         int toColumn = nextMove.getToColumn();
         int toRow = nextMove.getToRow();
-
-        //@TODO BITY? CZY NIE BITY?
+        int beatingRow = nextMove.getBeatingRow();
+        int beatingColumn = nextMove.getBeatingColumn();
 
         FieldState fromFigure = fieldStates[fromRow][fromColumn];
         FieldState toFigure = fieldStates[toRow][toColumn];
 
-        BigInteger newHash = hash.xor(this.randomNumberedTable[(fromRow + fromColumn) / 2][fromFigure.getValue()]);
-        newHash = newHash.xor(this.randomNumberedTable[(toRow + toColumn) / 2][toFigure.getValue()]);
+        long newHash = hash ^ (this.randomNumberedTable[(fromRow + fromColumn) / 2][fromFigure.getValue()]);
+        newHash = newHash ^ (this.randomNumberedTable[(toRow + toColumn) / 2][toFigure.getValue()]);
 
-        newHash = newHash.xor(this.randomNumberedTable[(fromRow + fromColumn) / 2][toFigure.getValue()]);
-        newHash = newHash.xor(this.randomNumberedTable[(toRow + toColumn) / 2][fromFigure.getValue()]);
+        newHash = newHash ^ (this.randomNumberedTable[(fromRow + fromColumn) / 2][toFigure.getValue()]);
+        newHash = newHash ^ (this.randomNumberedTable[(toRow + toColumn) / 2][fromFigure.getValue()]);
+
+        if ((beatingColumn != 0) && (beatingRow != 0)) {
+            FieldState beatedFigure = fieldStates[beatingRow][beatingColumn];
+            newHash = newHash ^ (this.randomNumberedTable[(beatingRow + beatingColumn) / 2][beatedFigure.getValue()]);
+            newHash = newHash ^ (this.randomNumberedTable[(beatingRow + beatingColumn) / 2][FieldState.empty.getValue()]);
+        }
 
         return newHash;
     }
 
-    private void insertTranspositionTableCell(BigInteger hash, int alpha, int beta, Move alphaMove, Move betaMove, int depth, Board board) {
+    private void insertTranspositionTableCell(long hash, int alpha, int beta, Move alphaMove, Move betaMove, int depth, Board board) {
         TranspositionTableCell transpositionTableCell = new TranspositionTableCell(alpha, beta, alphaMove, betaMove, depth, board);
-        transpositionTable.put(hash, transpositionTableCell);
+        if (!transpositionTable.containsKey(hash)) {
+            transpositionTable.put(hash, new LinkedList<>());
+        }
+        transpositionTable.get(hash).add(transpositionTableCell);
     }
 
-    public void minMaxAlphaBeta(BigInteger state, int depth) {
-        TranspositionTableCell transpositionTableCell = this.transpositionTable.get(state);
-        if (transpositionTableCell != null)
-            if (transpositionTableCell.getSearchingDepth() >= 5)
-                return;
-        alphaBeta(state, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        //mamy odpowiedz jaki ruch wykonac w tabeli transpozycji
-    }
-
-    private Integer alphaBeta(BigInteger state, int depth, Integer alpha, Integer beta) {
-        Board board = this.transpositionTable.get(state).getBoard();
-        if (this.transpositionTable.containsKey(state)) {           //istnieje juz taki stan w tabeli transpozycji
-            if (this.transpositionTable.get(state).getSearchingDepth() >= depth) {
-                if (board.getActivePlayer().equals(this.player)) {  //na sztywno -> gracz jest bialy
-                    return alpha;   //w dokumentacji beta
-                } else {
-                    return beta;    //w dokmentacji alpha
+    public void minMaxAlphaBeta(long state, Board board, int depth) {
+        TranspositionTableCell transpositionTableCell = null;
+        if (this.transpositionTable.containsKey(state)) {
+            for (TranspositionTableCell ttc : this.transpositionTable.get(state)) {
+                if (ttc.getBoard().equals(board)) {
+                    transpositionTableCell = ttc;
                 }
             }
+        }
+        if (transpositionTableCell != null) {
+            if (transpositionTableCell.getSearchingDepth() >= 1) {
+                return;
+            }
+        }
+        alphaBeta(state, board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+
+    private Integer alphaBeta(long state, Board board, int depth, Integer alpha, Integer beta) {
+        //istnieje juz taki stan w tabeli transpozycji
+        if (this.transpositionTable.containsKey(state)) {
+            TranspositionTableCell transpositionTableCell;
+            for (TranspositionTableCell ttc : this.transpositionTable.get(state)) {
+                if (ttc.getBoard().equals(board)) {
+                    transpositionTableCell = ttc;
+                    if (transpositionTableCell.getSearchingDepth() >= depth) {
+                        if (board.getActivePlayer().equals(this.player)) {  //na sztywno -> gracz jest bialy
+                            return transpositionTableCell.getAlpha();   //w dokumentacji beta
+                        } else {
+                            return transpositionTableCell.getBeta();    //w dokmentacji alpha
+                        }
+                    }
+                }
+            }
+
         }
         if (!board.tellMeTheWinner().equals(Player.none) || (depth == 0)) {
             return board.getBoardEvaulation();
@@ -163,14 +190,14 @@ public class BoardState {
             Set<Board> possibleBoards = possibleMoves.keySet();
             Move maxMove = null;
             for (Board child : possibleBoards) {
-                BigInteger hash = getNextMoveHash(state, possibleMoves.get(child), child);
-                int temp = alphaBeta(hash, depth - 1, alpha, beta);
-                if (temp > alpha) {
+                long hash = getNextMoveHash(state, possibleMoves.get(child), board);
+                int temp = alphaBeta(hash, child, depth - 1, alpha, beta);
+                if (temp >= alpha) {
                     alpha = temp;
                     maxMove = possibleMoves.get(child);
                 }
                 if (alpha >= beta) {
-                    insertTranspositionTableCell(hash, alpha, beta, maxMove, null, depth, child);
+                    insertTranspositionTableCell(state, alpha, beta, maxMove, null, depth, board);
                     return beta;
                 }
             }
@@ -181,14 +208,14 @@ public class BoardState {
             Set<Board> possibleBoards = possibleMoves.keySet();
             Move minMove = null;
             for (Board child : possibleBoards) {
-                BigInteger hash = getNextMoveHash(state, possibleMoves.get(child), child);
-                int temp = alphaBeta(hash, depth - 1, alpha, beta);
-                if (temp < beta) {
+                long hash = getNextMoveHash(state, possibleMoves.get(child), board);
+                int temp = alphaBeta(hash, child, depth - 1, alpha, beta);
+                if (temp <= beta) {
                     beta = temp;
                     minMove = possibleMoves.get(child);
                 }
                 if (alpha >= beta) {
-                    insertTranspositionTableCell(hash, alpha, beta, null, minMove, depth, board);
+                    insertTranspositionTableCell(state, alpha, beta, null, minMove, depth, board);
                     return alpha;
                 }
             }
@@ -197,15 +224,23 @@ public class BoardState {
         }
     }
 
-    public void performThinkingAndMove(){
+    public void performThinkingAndMove() {
         Board board = gameboard.getCoppyOfOfficialBoard();
-        BigInteger hash = countHashFunction(board);
-        minMaxAlphaBeta(hash, 15);
-        TranspositionTableCell transpositionTableCell = this.transpositionTable.get(hash);
-        if(this.player.equals(Player.black))
-            gameboard.performWhitePlayerMovement(transpositionTableCell.getBetaMove());
-        else
-            gameboard.performBlackPlayerMovement(transpositionTableCell.getBetaMove());
-    }
+        long hash = countHashFunction(board);
+        minMaxAlphaBeta(hash, gameboard.getCoppyOfOfficialBoard(), 7);
+        TranspositionTableCell transpositionTableCell = null;
+        for (TranspositionTableCell ttc : this.transpositionTable.get(hash)) {
+            if (ttc.getBoard().equals(board)) {
+                transpositionTableCell = ttc;
+                if (this.player.equals(Player.black)) {
+                    gameboard.performWhitePlayerMovement(transpositionTableCell.getBetaMove());
+                } else {
+                    gameboard.performBlackPlayerMovement(transpositionTableCell.getBetaMove());
+                    System.out.println(transpositionTableCell.getSearchingDepth());
+                    gameboard.displayOfficialBoard();
+                }
+            }
+        }
 
+    }
 }

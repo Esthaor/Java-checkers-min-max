@@ -14,6 +14,10 @@ public class Move {
     private int toRow;
     private int toColumn;
 
+    // Only to AI usage
+    private int beatingRow;
+    private int beatingColumn;
+
     public Move() {
 
     }
@@ -41,6 +45,23 @@ public class Move {
             this.toRow = row;
             this.toColumn = column;
         }
+    }
+
+    public void setBeatingCell(int row, int column) throws Exception {
+        if (row < 0 || row > 7 || column < 0 || column > 7) {
+            throw new Exception("Move not valid!");
+        } else {
+            this.toRow = row;
+            this.toColumn = column;
+        }
+    }
+
+    public int getBeatingRow() {
+        return beatingRow;
+    }
+
+    public int getBeatingColumn() {
+        return beatingColumn;
     }
 
     public int getFromRow() {

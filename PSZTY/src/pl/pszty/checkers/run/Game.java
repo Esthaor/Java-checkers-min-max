@@ -9,6 +9,7 @@ import java.awt.*;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import pl.pszty.checkers.ai.BoardState;
 
 import pl.pszty.checkers.core.Gameboard;
 import pl.pszty.checkers.core.Move;
@@ -24,10 +25,13 @@ public class Game {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+
+        Gameboard mainGame = Gameboard.getInstance();
+        mainGame.setHumanPlayer(Player.white);
+
         EventQueue.invokeLater(() -> {
             new BoardRenderer();
         });
-        Gameboard mainGame = Gameboard.getInstance();
 
         Scanner userInput;
 
