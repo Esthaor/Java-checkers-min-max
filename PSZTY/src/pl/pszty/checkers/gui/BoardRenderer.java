@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.System.*;
+
 import pl.pszty.checkers.ai.BoardState;
 
 /**
@@ -39,12 +40,14 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     Point destinationMoveLocation;
     JPanel sourceField;
     Player activePlayer;
+    Player humanPlayer;
     JLabel currentPlayer;
     JLabel currentPlayerColor;
     static private MyGlassPane myGlassPane;
     JMenuBar menuBar;
     JCheckBox changeButton;
     private BoardState boardState;
+    boolean firstGame = true;
 
     public BoardRenderer() {
         try {
@@ -67,14 +70,13 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         getIcons();
         setJMenuBar(createMenuBar());
         drawBoard();
-        drawFigures();
-        activePlayer = mainBoard.getActivePlayer();
-        addGameInfo();
+        mainBoard = Gameboard.getInstance();
+        displayDialog();
         this.setResizable(true);
         this.pack();
         this.setLocationRelativeTo(null);
         this.setVisible(true);
-        boardState = new BoardState();
+        boardState = mainBoard.getBoardState();
     }
 
     class MyGlassPane extends JComponent implements ItemListener {
@@ -99,7 +101,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         Container contentPane;
 
         public CBListener(Component liveButton, JMenuBar menuBar,
-                MyGlassPane glassPane, Container contentPane) {
+                          MyGlassPane glassPane, Container contentPane) {
             toolkit = Toolkit.getDefaultToolkit();
             this.liveButton = liveButton;
             this.glassPane = glassPane;
@@ -137,7 +139,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 
         //A basic implementation of redispatching events.
         private void redispatchMouseEvent(MouseEvent e,
-                boolean repaint) {
+                                          boolean repaint) {
             Point glassPanePoint = e.getPoint();
             Container container = contentPane;
             Point containerPoint = SwingUtilities.convertPoint(
@@ -161,9 +163,9 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 //Find out exactly which component it's over.
                 Component component
                         = SwingUtilities.getDeepestComponentAt(
-                                container,
-                                containerPoint.x,
-                                containerPoint.y);
+                        container,
+                        containerPoint.x,
+                        containerPoint.y);
 
                 if ((component != null)
                         && (component.equals(liveButton))) {
@@ -182,6 +184,46 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                             e.isPopupTrigger()));
                 }
             }
+        }
+    }
+
+    public void displayDialog() {
+        JFrame frame = new JFrame();
+
+        Object[] possibilities = {"biały", "czarny"};
+        String s = (String) JOptionPane.showInputDialog(
+                frame,
+                "Wybierz kolor",
+                "Nowa gra",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                possibilities,
+                "biały");
+        if (s.equals("czarny")) {
+            mainBoard.setHumanPlayer(Player.black);
+        } else {
+            mainBoard.setHumanPlayer(Player.white);
+        }
+        mainBoard.newGame();
+        activePlayer = mainBoard.getActivePlayer();
+        humanPlayer = mainBoard.getHumanPlayer();
+        if (firstGame) {
+            drawFigures();
+            addGameInfo();
+            firstGame = false;
+        } else {
+            redrawFigures();
+            updateGameInfo();
+        }
+    }
+
+    public void performOpponentMove() {
+        activePlayer = mainBoard.getActivePlayer();
+        humanPlayer = mainBoard.getHumanPlayer();
+        if ((!activePlayer.equals(humanPlayer)) && mainBoard.getWinner().equals(Player.none)) {
+            boardState.performThinkingAndMove();
+            updateGameInfo();
+            redrawFigures();
         }
     }
 
@@ -215,10 +257,10 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 = new JCheckBox("Glass pane \"visible\"");
         changeButton.setSelected(false);
 
-        getContentPane().add(changeButton, c);
+        //getContentPane().add(changeButton, c);
         myGlassPane = new MyGlassPane(changeButton,
                 getContentPane());
-        changeButton.addItemListener(myGlassPane);
+        //changeButton.addItemListener(myGlassPane);
         setGlassPane(myGlassPane);
     }
 
@@ -244,10 +286,10 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
             e.printStackTrace();
             exit(1);
         }
-        blackPawn = new ImageIcon(figureIcons[0][0]);
-        whitePawn = new ImageIcon(figureIcons[0][1]);
-        blackQueen = new ImageIcon(figureIcons[1][0]);
-        whiteQueen = new ImageIcon(figureIcons[1][1]);
+        blackPawn = new ImageIcon(figureIcons[0][0], "blackPawn");
+        whitePawn = new ImageIcon(figureIcons[0][1], "whitePawn");
+        blackQueen = new ImageIcon(figureIcons[1][0], "blackQueen");
+        whiteQueen = new ImageIcon(figureIcons[1][1], "whiteQueen");
     }
 
     public void drawBoard() {
@@ -272,6 +314,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 
         guiContainer.add(board, JLayeredPane.DEFAULT_LAYER);
 
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 JPanel field = new JPanel(new BorderLayout());
@@ -283,10 +326,19 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 board.add(field);
             }
         }
+
+        guiContainer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("SPACE"),
+                "spacePressed");
+        guiContainer.getActionMap().put("spacePressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                performOpponentMove();
+            }
+        });
+
     }
 
     public void drawFigures() {
-        mainBoard = Gameboard.getInstance();
         Board copyOfOfficialBoard = mainBoard.getCoppyOfOfficialBoard();
         FieldState[][] fields = copyOfOfficialBoard.getBoard();
         for (int i = 0; i < 8; i++) {
@@ -295,6 +347,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                     continue;
                 } else if (fields[i][j].equals(FieldState.blackPawn)) {
                     figure = new JLabel(blackPawn);
+
                 } else if (fields[i][j].equals(FieldState.whitePawn)) {
                     figure = new JLabel(whitePawn);
 
@@ -303,6 +356,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 
                 } else if (fields[i][j].equals(FieldState.whiteQueen)) {
                     figure = new JLabel(whiteQueen);
+
                 }
                 JPanel panel = (JPanel) board.getComponent(i * 8 + j);
                 panel.add(figure);
@@ -311,7 +365,6 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     }
 
     public void redrawFigures() {
-        mainBoard = Gameboard.getInstance();
         Board copyOfOfficialBoard = mainBoard.getCoppyOfOfficialBoard();
         FieldState[][] fields = copyOfOfficialBoard.getBoard();
         for (int i = 0; i < 8; i++) {
@@ -320,9 +373,11 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                     JPanel panel = (JPanel) board.getComponent(i * 8 + j);
                     panel.removeAll();
                     panel.revalidate();
+                    panel.repaint();
                     continue;
                 } else if (fields[i][j].equals(FieldState.blackPawn)) {
                     figure = new JLabel(blackPawn);
+
                 } else if (fields[i][j].equals(FieldState.whitePawn)) {
                     figure = new JLabel(whitePawn);
 
@@ -331,10 +386,12 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 
                 } else if (fields[i][j].equals(FieldState.whiteQueen)) {
                     figure = new JLabel(whiteQueen);
+
                 }
                 JPanel panel = (JPanel) board.getComponent(i * 8 + j);
                 panel.add(figure);
                 panel.revalidate();
+                panel.repaint();
             }
         }
     }
@@ -353,6 +410,11 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 KeyEvent.VK_N);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+        menuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                displayDialog();
+            }
+        });
         menu.add(menuItem);
 
         menu.addSeparator();
@@ -387,7 +449,21 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         if (component instanceof JPanel) {
             return;
         }
-
+        JLabel pawnCheck = (JLabel) component;
+        humanPlayer = mainBoard.getHumanPlayer();
+        activePlayer = mainBoard.getActivePlayer();
+        String iconID;
+        iconID = ((ImageIcon) pawnCheck.getIcon()).getDescription();
+        if (humanPlayer.equals(activePlayer)) {
+            if (humanPlayer.equals(Player.white) && (iconID.equals("blackPawn") || iconID.equals("blackQueen"))) {
+                return;
+            }
+            if (humanPlayer.equals(Player.black) && (iconID.equals("whitePawn") || iconID.equals("whiteQueen"))) {
+                return;
+            }
+        } else {
+            return;
+        }
         sourceMoveLocation = component.getParent().getLocation();
 
         xCorrection = sourceMoveLocation.x - e.getX();
@@ -396,7 +472,6 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         figure.setLocation(e.getX(), e.getY());
         guiContainer.add(figure, JLayeredPane.DRAG_LAYER);
         guiContainer.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-
     }
 
     @Override
@@ -444,26 +519,8 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 } catch (Exception ex) {
                     Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
-                if (activePlayer.equals(Player.black)) {
-//                    if (mainBoard.performBlackPlayerMovement(move)) {
-//                        redrawFigures();
-//                        activePlayer = mainBoard.getActivePlayer();
-//                        updateGameInfo();
-//                        out.println(activePlayer);
-//                        if (!mainBoard.getWinner().equals(Player.none)) {
-//                            changeButton.setSelected(true);
-//                        }
-//                    } else {
-//                        out.println("chujnia");
-//                        sourceField.add(figure);
-//                        figure.setVisible(true);
-//                    }
-//                    boardState.performThinkingAndMove();
-//                    redrawFigures();
-//                    activePlayer = mainBoard.getActivePlayer();
-//                    updateGameInfo();
-                } else {
+                humanPlayer = mainBoard.getHumanPlayer();
+                if (activePlayer.equals(Player.white) && humanPlayer.equals(Player.white)) {
                     if (mainBoard.performWhitePlayerMovement(move)) {
                         redrawFigures();
                         activePlayer = mainBoard.getActivePlayer();
@@ -472,13 +529,20 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                         if (!mainBoard.getWinner().equals(Player.none)) {
                             changeButton.setSelected(true);
                         }
-                        
-                        //WYWALA PRZY KOŃCU GRY, DO JĘDRZEJA
-                        while (activePlayer.equals(Player.black)) {
-                            boardState.performThinkingAndMove();
-                            redrawFigures();
-                            activePlayer = mainBoard.getActivePlayer();
-                            updateGameInfo();
+                    } else {
+                        out.println("chujnia");
+                        sourceField.add(figure);
+                        figure.setVisible(true);
+                    }
+                }
+                if (activePlayer.equals(Player.black) && humanPlayer.equals(Player.black)) {
+                    if (mainBoard.performBlackPlayerMovement(move)) {
+                        redrawFigures();
+                        activePlayer = mainBoard.getActivePlayer();
+                        updateGameInfo();
+                        out.println(activePlayer);
+                        if (!mainBoard.getWinner().equals(Player.none)) {
+                            changeButton.setSelected(true);
                         }
                     } else {
                         out.println("chujnia");
@@ -524,5 +588,4 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     public void mouseMoved(MouseEvent e) {
 
     }
-
 }
