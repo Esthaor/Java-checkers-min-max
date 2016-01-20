@@ -51,8 +51,8 @@ public class Move {
         if (row < 0 || row > 7 || column < 0 || column > 7) {
             throw new Exception("Move not valid!");
         } else {
-            this.toRow = row;
-            this.toColumn = column;
+            this.beatingRow = row;
+            this.beatingColumn = column;
         }
     }
 
