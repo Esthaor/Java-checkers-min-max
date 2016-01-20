@@ -28,6 +28,7 @@ public class Game {
 
         Gameboard mainGame = Gameboard.getInstance();
         mainGame.setHumanPlayer(Player.white);
+        mainGame.setBoardState(new BoardState());
 
         EventQueue.invokeLater(() -> {
             new BoardRenderer();
