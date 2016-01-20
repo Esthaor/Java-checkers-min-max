@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.System.*;
+
 import pl.pszty.checkers.ai.BoardState;
 
 /**
@@ -99,7 +100,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         Container contentPane;
 
         public CBListener(Component liveButton, JMenuBar menuBar,
-                MyGlassPane glassPane, Container contentPane) {
+                          MyGlassPane glassPane, Container contentPane) {
             toolkit = Toolkit.getDefaultToolkit();
             this.liveButton = liveButton;
             this.glassPane = glassPane;
@@ -137,7 +138,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 
         //A basic implementation of redispatching events.
         private void redispatchMouseEvent(MouseEvent e,
-                boolean repaint) {
+                                          boolean repaint) {
             Point glassPanePoint = e.getPoint();
             Container container = contentPane;
             Point containerPoint = SwingUtilities.convertPoint(
@@ -161,9 +162,9 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 //Find out exactly which component it's over.
                 Component component
                         = SwingUtilities.getDeepestComponentAt(
-                                container,
-                                containerPoint.x,
-                                containerPoint.y);
+                        container,
+                        containerPoint.x,
+                        containerPoint.y);
 
                 if ((component != null)
                         && (component.equals(liveButton))) {
@@ -182,6 +183,16 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                             e.isPopupTrigger()));
                 }
             }
+        }
+    }
+
+    public void performOpponentMove() {
+        activePlayer = mainBoard.getActivePlayer();
+        if (activePlayer.equals(Player.black) && mainBoard.getWinner().equals(Player.none)) {
+            boardState.performThinkingAndMove();
+            redrawFigures();
+            activePlayer = mainBoard.getActivePlayer();
+            updateGameInfo();
         }
     }
 
@@ -215,10 +226,10 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 = new JCheckBox("Glass pane \"visible\"");
         changeButton.setSelected(false);
 
-        getContentPane().add(changeButton, c);
+        //getContentPane().add(changeButton, c);
         myGlassPane = new MyGlassPane(changeButton,
                 getContentPane());
-        changeButton.addItemListener(myGlassPane);
+        //changeButton.addItemListener(myGlassPane);
         setGlassPane(myGlassPane);
     }
 
@@ -272,6 +283,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 
         guiContainer.add(board, JLayeredPane.DEFAULT_LAYER);
 
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 JPanel field = new JPanel(new BorderLayout());
@@ -283,6 +295,16 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 board.add(field);
             }
         }
+
+        guiContainer.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("SPACE"),
+                "spacePressed");
+        guiContainer.getActionMap().put("spacePressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                performOpponentMove();
+            }
+        });
+
     }
 
     public void drawFigures() {
@@ -445,25 +467,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                     Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-                if (activePlayer.equals(Player.black)) {
-//                    if (mainBoard.performBlackPlayerMovement(move)) {
-//                        redrawFigures();
-//                        activePlayer = mainBoard.getActivePlayer();
-//                        updateGameInfo();
-//                        out.println(activePlayer);
-//                        if (!mainBoard.getWinner().equals(Player.none)) {
-//                            changeButton.setSelected(true);
-//                        }
-//                    } else {
-//                        out.println("chujnia");
-//                        sourceField.add(figure);
-//                        figure.setVisible(true);
-//                    }
-//                    boardState.performThinkingAndMove();
-//                    redrawFigures();
-//                    activePlayer = mainBoard.getActivePlayer();
-//                    updateGameInfo();
-                } else {
+                if (activePlayer.equals(Player.white)) {
                     if (mainBoard.performWhitePlayerMovement(move)) {
                         redrawFigures();
                         activePlayer = mainBoard.getActivePlayer();
@@ -471,14 +475,6 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                         out.println(activePlayer);
                         if (!mainBoard.getWinner().equals(Player.none)) {
                             changeButton.setSelected(true);
-                        }
-                        
-                        //WYWALA PRZY KOŃCU GRY, DO JĘDRZEJA
-                        while (activePlayer.equals(Player.black)) {
-                            boardState.performThinkingAndMove();
-                            redrawFigures();
-                            activePlayer = mainBoard.getActivePlayer();
-                            updateGameInfo();
                         }
                     } else {
                         out.println("chujnia");
@@ -524,5 +520,4 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     public void mouseMoved(MouseEvent e) {
 
     }
-
 }
