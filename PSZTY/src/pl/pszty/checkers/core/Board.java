@@ -1127,7 +1127,7 @@ public class Board {
                 } // End of checking pawn
 
                 if (this.board[row][column].equals(myQueen)) {
-                    // Normal moves of queen
+                    // moves of queen
 
                     if (this.lastMoveIfMultipleBeating != null) {
                         int lastColumn = this.lastMoveIfMultipleBeating.getToColumn();
@@ -1148,7 +1148,9 @@ public class Board {
                                 j--;
                                 continue;
                             }
-                            if (this.lastMoveIfMultipleBeating != null && !wasBeating) {
+                            if ((this.lastMoveIfMultipleBeating != null) && !wasBeating) {
+                                i--;
+                                j--;
                                 continue;
                             }
                             Move move = new Move();
@@ -1169,6 +1171,9 @@ public class Board {
                             wasBeating = true;
                             beatRow = i;
                             beatColumn = j;
+                            i--;
+                            j--;
+                            continue;
                         } else {
                             break;
                         }
@@ -1187,7 +1192,9 @@ public class Board {
                                 j++;
                                 continue;
                             }
-                            if (this.lastMoveIfMultipleBeating != null && !wasBeating) {
+                            if ((this.lastMoveIfMultipleBeating != null) && !wasBeating) {
+                                i--;
+                                j++;
                                 continue;
                             }
                             Move move = new Move();
@@ -1208,6 +1215,9 @@ public class Board {
                             wasBeating = true;
                             beatRow = i;
                             beatColumn = j;
+                            i--;
+                            j++;
+                            continue;
                         } else {
                             break;
                         }
@@ -1227,6 +1237,8 @@ public class Board {
                                 continue;
                             }
                             if (this.lastMoveIfMultipleBeating != null && !wasBeating) {
+                                i++;
+                                j--;
                                 continue;
                             }
                             Move move = new Move();
@@ -1247,6 +1259,9 @@ public class Board {
                             wasBeating = true;
                             beatRow = i;
                             beatColumn = j;
+                            i++;
+                            j--;
+                            continue;
                         } else {
                             break;
                         }
@@ -1266,6 +1281,8 @@ public class Board {
                                 continue;
                             }
                             if (this.lastMoveIfMultipleBeating != null && !wasBeating) {
+                                i++;
+                                j++;
                                 continue;
                             }
                             Move move = new Move();
@@ -1286,6 +1303,9 @@ public class Board {
                             wasBeating = true;
                             beatRow = i;
                             beatColumn = j;
+                            i++;
+                            j++;
+                            continue;
                         } else {
                             break;
                         }
