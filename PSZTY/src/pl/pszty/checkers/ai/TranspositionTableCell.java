@@ -9,12 +9,14 @@ import java.math.BigInteger;
  * Created by Michal on 14.01.2016.
  */
 public class TranspositionTableCell {
+
     private int alpha;
     private int beta;
     private Move alphaMove;
     private Move betaMove;
     private int searchingDepth;
     private Board board;
+    private int updateCounter;
 
     public TranspositionTableCell(int alpha, int beta, Move alphaMove, Move betaMove, int searchingDepth, Board board) {
         this.alpha = alpha;
@@ -72,5 +74,12 @@ public class TranspositionTableCell {
     public void setBoard(Board board) {
         this.board = board;
     }
-}
 
+    public int getUpdateCounter() {
+        return updateCounter;
+    }
+
+    public void setUpdateCounter(int updateCounter) {
+        this.updateCounter = updateCounter;
+    }
+}

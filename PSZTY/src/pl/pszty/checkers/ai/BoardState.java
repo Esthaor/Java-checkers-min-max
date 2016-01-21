@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @author Michal Created by Michal on 13.01.2016.
  */
 public class BoardState {
-
+    
     private long randomNumberedTable[][];
     private Map<Long, List<TranspositionTableCell>> transpositionTable;
     private Path rnTableFile;
@@ -27,16 +27,17 @@ public class BoardState {
     private Player player;
     private int hashCount;
     private int boardCount;
-
+    private TranspositionTableCell lastCell;
+    
     public BoardState() {
         String os = System.getProperty("os.name");
-
+        
         if (os.startsWith("Windows")) {
             this.rnTableFile = Paths.get("C:\\Users\\Public\\Documents\\bst.csv");
         } else {
             this.rnTableFile = Paths.get("/tmp/bst.csv");
         }
-
+        
         if (this.rnTableFile.toFile().isFile()) {
             try {
                 this.readTable();
@@ -58,7 +59,7 @@ public class BoardState {
         this.boardCount = 0;
         this.hashCount = 0;
     }
-
+    
     private List<String> createTable() {
         List<String> rnTableString = new ArrayList<>();
         String toList;
@@ -76,7 +77,7 @@ public class BoardState {
         }
         return rnTableString;
     }
-
+    
     private List<String> readTable() throws IOException {
         List<String> fromFile = Files.lines(this.rnTableFile).map(line -> line.split(";")).flatMap(Arrays::stream).collect(Collectors.toList());
         this.randomNumberedTable = new long[32][5];
@@ -90,7 +91,7 @@ public class BoardState {
         }
         return fromFile;
     }
-
+    
     public void printRnTable() {
         for (int row = 0; row < 32; row++) {
             for (int column = 0; column < 5; column++) {
@@ -99,9 +100,9 @@ public class BoardState {
             System.out.println();
         }
     }
-
+    
     private long countHashFunction(Board board) {
-
+        
         FieldState[][] fieldStates = board.getBoard();
         long sum = 0;
         for (int row = 0; row < 8; row++) {
@@ -113,9 +114,9 @@ public class BoardState {
         }
         return sum;
     }
-
+    
     private long getNextMoveHash(long hash, Move nextMove, Board board) {
-
+        
         FieldState[][] fieldStates = board.getBoard();
         int fromColumn = nextMove.getFromColumn();
         int fromRow = nextMove.getFromRow();
@@ -123,44 +124,48 @@ public class BoardState {
         int toRow = nextMove.getToRow();
         int beatingRow = nextMove.getBeatingRow();
         int beatingColumn = nextMove.getBeatingColumn();
-
+        
         FieldState fromFigure = fieldStates[fromRow][fromColumn];
         FieldState toFigure = fieldStates[toRow][toColumn];
-
+        
         long newHash = hash ^ (this.randomNumberedTable[(fromRow + fromColumn) / 2][fromFigure.getValue()]);
         newHash = newHash ^ (this.randomNumberedTable[(toRow + toColumn) / 2][toFigure.getValue()]);
-
+        
         newHash = newHash ^ (this.randomNumberedTable[(fromRow + fromColumn) / 2][toFigure.getValue()]);
         newHash = newHash ^ (this.randomNumberedTable[(toRow + toColumn) / 2][fromFigure.getValue()]);
-
+        
         if ((beatingColumn != 0) && (beatingRow != 0)) {
             FieldState beatedFigure = fieldStates[beatingRow][beatingColumn];
             newHash = newHash ^ (this.randomNumberedTable[(beatingRow + beatingColumn) / 2][beatedFigure.getValue()]);
             newHash = newHash ^ (this.randomNumberedTable[(beatingRow + beatingColumn) / 2][FieldState.empty.getValue()]);
         }
-
+        
         return newHash;
     }
-
+    
     private void insertTranspositionTableCell(long hash, int alpha, int beta, Move alphaMove, Move betaMove, int depth, Board board) {
         TranspositionTableCell transpositionTableCell = new TranspositionTableCell(alpha, beta, alphaMove, betaMove, depth, board);
         if (!transpositionTable.containsKey(hash)) {
             transpositionTable.put(hash, new LinkedList<>());
             hashCount++;
         }
+        int updateCounter = 0;
         List<TranspositionTableCell> get = transpositionTable.get(hash);
         for (TranspositionTableCell cell : get) {
             if (cell.getBoard().equals(board)) {
                 get.remove(cell);
+                updateCounter = cell.getUpdateCounter();
+                updateCounter++;
                 transpositionTable.remove(hash);
                 transpositionTable.put(hash, get);
                 break;
             }
         }
+        transpositionTableCell.setUpdateCounter(updateCounter);
         transpositionTable.get(hash).add(transpositionTableCell);
         boardCount++;
     }
-
+    
     public void minMaxAlphaBeta(long state, Board board, int depth) {
         TranspositionTableCell transpositionTableCell = null;
         if (this.transpositionTable.containsKey(state)) {
@@ -177,7 +182,7 @@ public class BoardState {
         }
         alphaBeta(state, board, depth, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
-
+    
     private Integer alphaBeta(long state, Board board, int depth, Integer alpha, Integer beta) {
         //istnieje juz taki stan w tabeli transpozycji
         if (this.transpositionTable.containsKey(state)) {
@@ -195,7 +200,7 @@ public class BoardState {
                     break;
                 }
             }
-
+            
         }
         if (!board.tellMeTheWinner().equals(Player.none) || (depth == 0)) {
             return board.getBoardEvaluation();
@@ -214,7 +219,7 @@ public class BoardState {
                 }
                 if (alpha >= beta) {
                     // Odcięcie gałęzi
-                    insertTranspositionTableCell(state, alpha, beta, maxMove, null, depth, board);
+                    //insertTranspositionTableCell(state, alpha, beta, maxMove, null, depth, board);
                     return beta;
                 }
             }
@@ -232,7 +237,7 @@ public class BoardState {
                     minMove = possibleMoves.get(child);
                 }
                 if (alpha >= beta) {
-                    insertTranspositionTableCell(state, alpha, beta, null, minMove, depth, board);
+                    //insertTranspositionTableCell(state, alpha, beta, null, minMove, depth, board);
                     return alpha;
                 }
             }
@@ -240,22 +245,39 @@ public class BoardState {
             return beta;
         }
     }
-
+    
     public void performThinkingAndMove() {
         Board board = gameboard.getCoppyOfOfficialBoard();
         long hash = countHashFunction(board);
         minMaxAlphaBeta(hash, gameboard.getCoppyOfOfficialBoard(), 9);
-
+        
         List<TranspositionTableCell> get = this.transpositionTable.get(hash);
         for (TranspositionTableCell ttc : get) {
             if (ttc.getBoard().equals(board)) {
                 if (this.player.equals(Player.black)) {
                     gameboard.performWhitePlayerMovement(ttc.getBetaMove());
+                    lastCell = ttc;
                 } else {
                     gameboard.performBlackPlayerMovement(ttc.getBetaMove());
-                    System.out.println(ttc.getBeta());
+                    lastCell = ttc;
                 }
             }
         }
+    }
+    
+    public int getHashCount() {
+        return hashCount;
+    }
+    
+    public int getBoardCount() {
+        return boardCount;
+    }
+    
+    public long[][] getRandomNumberedTable() {
+        return randomNumberedTable;
+    }
+    
+    public TranspositionTableCell getLastCell() {
+        return lastCell;
     }
 }
