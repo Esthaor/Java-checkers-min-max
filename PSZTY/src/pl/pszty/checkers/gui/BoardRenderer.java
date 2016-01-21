@@ -1,5 +1,6 @@
 package pl.pszty.checkers.gui;
 
+import pl.pszty.checkers.ai.TranspositionTableCell;
 import pl.pszty.checkers.core.Board;
 import pl.pszty.checkers.core.Gameboard;
 import pl.pszty.checkers.core.Move;
@@ -42,9 +43,16 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     Player humanPlayer;
     JLabel currentPlayer;
     JLabel currentPlayerColor;
+    JLabel hashCount;
+    JLabel graphCount;
+    JLabel alphaValue;
+    JLabel betaValue;
+    JLabel searchDepth;
     JMenuBar menuBar;
     private BoardState boardState;
     boolean firstGame = true;
+    TranspositionTableCell lastCell;
+    long[][] hashTable;
 
     public BoardRenderer() {
         try {
@@ -71,6 +79,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         UIManager.put("OptionPane.cancelButtonText", "Anuluj");
         UIManager.put("OptionPane.okButtonText", "OK");
         displayDialog();
+        hashTable = boardState.getRandomNumberedTable();
         this.setResizable(true);
         this.pack();
         this.setLocationRelativeTo(null);
@@ -97,16 +106,19 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
             mainBoard.newGame();
             activePlayer = mainBoard.getActivePlayer();
             humanPlayer = mainBoard.getHumanPlayer();
+            mainBoard.setBoardState(new BoardState());
+            boardState = mainBoard.getBoardState();
             if (firstGame) {
                 drawFigures();
                 addGameInfo();
                 firstGame = false;
             } else {
+                alphaValue.setText("-");
+                betaValue.setText("-");
+                searchDepth.setText("-");
                 redrawFigures();
                 updateGameInfo();
             }
-            mainBoard.setBoardState(new BoardState());
-            boardState = mainBoard.getBoardState();
         } else {
             if (firstGame) {
                 exit(0);
@@ -145,12 +157,39 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         }
     }
 
+    public void hashTableDialog() {
+        JFrame frame = new JFrame();
+        JPanel panel = new JPanel(new GridLayout(32, 5, 10, 10));
+        for (int i = 0; i < 32; i++) {
+            for (int j = 0; j < 5; j++) {
+                JLabel label = new JLabel();
+                label.setText(Long.toUnsignedString(hashTable[i][j]));
+                panel.add(label);
+            }
+        }
+        frame.add(panel, BorderLayout.CENTER);
+        JOptionPane.showConfirmDialog(
+                frame,
+                panel,
+                "Tablica HT",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+    }
+
     public void performOpponentMove() {
         activePlayer = mainBoard.getActivePlayer();
         humanPlayer = mainBoard.getHumanPlayer();
         if ((!activePlayer.equals(humanPlayer)) && mainBoard.getWinner().equals(Player.none)) {
-            boardState.performThinkingAndMove();
+            if (mainBoard.getWinner().equals(Player.none)) {
+                boardState.performThinkingAndMove();
+            }
             updateGameInfo();
+            hashCount.setText(Integer.toString(boardState.getHashCount()));
+            graphCount.setText(Integer.toString(boardState.getBoardCount()));
+            lastCell = boardState.getLastCell();
+            alphaValue.setText(Integer.toString(lastCell.getAlpha()));
+            betaValue.setText(Integer.toString(lastCell.getBeta()));
+            searchDepth.setText(Integer.toString(lastCell.getSearchingDepth()));
             redrawFigures();
         }
     }
@@ -158,9 +197,10 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     public void addGameInfo() {
         GridBagConstraints c = new GridBagConstraints();
         currentPlayer = new JLabel("Aktualny gracz:");
-        currentPlayer.setFont(new Font(null, Font.PLAIN, 18));
+        currentPlayer.setFont(new Font(null, Font.PLAIN, 16));
         currentPlayerColor = new JLabel();
         currentPlayerColor.setFont(new Font(null, Font.PLAIN, 14));
+
         if (activePlayer.equals(Player.black)) {
             currentPlayerColor.setText("czarny");
         } else if (activePlayer.equals(Player.white)) {
@@ -181,6 +221,56 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         c.gridx = 1;
         c.gridy = 0;
         c.weightx = 0.6;
+        JPanel panel = new JPanel(new GridLayout(16, 1, 10, 10));
+        JLabel hashInfo = new JLabel("Liczba unikatowych hashy");
+        hashInfo.setFont(new Font(null, Font.PLAIN, 16));
+        panel.add(hashInfo);
+        hashCount = new JLabel();
+        hashCount.setText(Integer.toString(boardState.getHashCount()));
+        hashCount.setFont(new Font(null, Font.PLAIN, 14));
+        panel.add(hashCount);
+        panel.add(new JLabel());
+        JLabel graphInfo = new JLabel("Wielkość grafu gry");
+        graphInfo.setFont(new Font(null, Font.PLAIN, 16));
+        panel.add(graphInfo);
+        graphCount = new JLabel();
+        graphCount.setText(Integer.toString(boardState.getBoardCount()));
+        graphCount.setFont(new Font(null, Font.PLAIN, 14));
+        panel.add(graphCount);
+        panel.add(new JLabel());
+        JLabel alphaInfo = new JLabel("Wartość alfa");
+        alphaInfo.setFont(new Font(null, Font.PLAIN, 16));
+        panel.add(alphaInfo);
+        alphaValue = new JLabel();
+        alphaValue.setText("-");
+        alphaValue.setFont(new Font(null, Font.PLAIN, 14));
+        panel.add(alphaValue);
+        panel.add(new JLabel());
+        JLabel betaInfo = new JLabel("Wartośc beta");
+        betaInfo.setFont(new Font(null, Font.PLAIN, 16));
+        panel.add(betaInfo);
+        betaValue = new JLabel();
+        betaValue.setText("-");
+        betaValue.setFont(new Font(null, Font.PLAIN, 14));
+        panel.add(betaValue);
+        panel.add(new JLabel());
+        JLabel searchDepthInfo = new JLabel("Głębokość przeszukiwania");
+        searchDepthInfo.setFont(new Font(null, Font.PLAIN, 16));
+        panel.add(searchDepthInfo);
+        searchDepth = new JLabel();
+        searchDepth.setText("-");
+        searchDepth.setFont(new Font(null, Font.PLAIN, 14));
+        panel.add(searchDepth);
+        panel.add(new JLabel());
+        Button displayHashTable = new Button("Wyświetl tablicę HT");
+        displayHashTable.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                hashTableDialog();
+            }
+        });
+        panel.add(displayHashTable);
+        getContentPane().add(panel, c);
+
     }
 
     public void updateGameInfo() {
