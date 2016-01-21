@@ -253,6 +253,7 @@ public class BoardState {
                     gameboard.performWhitePlayerMovement(ttc.getBetaMove());
                 } else {
                     gameboard.performBlackPlayerMovement(ttc.getBetaMove());
+                    System.out.println(ttc.getBeta());
                 }
             }
         }
