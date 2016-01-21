@@ -31,56 +31,6 @@ public class Game {
         EventQueue.invokeLater(() -> {
             new BoardRenderer();
         });
-
-        Scanner userInput;
-
-        while (mainGame.getWinner().equals(Player.none)) {
-            Player activePlayer = mainGame.getActivePlayer();
-
-            mainGame.displayOfficialBoard();
-
-            userInput = new Scanner(System.in);
-            String from = userInput.next();
-            String to = userInput.next();
-            if (from.equals("quit") || to.equals("quit")) {
-                break;
-            }
-            int fromRow = from.charAt(0) - 'a';
-            int fromColumn = from.charAt(1) - '1';
-
-            int toRow = to.charAt(0) - 'a';
-            int toColumn = to.charAt(1) - '1';
-
-            Move move = new Move();
-
-            try {
-                move.setFrom(fromRow, fromColumn);
-                move.setTo(toRow, toColumn);
-            } catch (Exception ex) {
-                Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            if (activePlayer.equals(Player.black)) {
-                mainGame.performBlackPlayerMovement(move);
-            } else {
-                mainGame.performWhitePlayerMovement(move);
-            }
-        }
-
-        Player winner = mainGame.getWinner();
-
-        mainGame.displayOfficialBoard();
-
-        System.out.println("GAME RESULT:");
-        if (winner.equals(Player.none)) {
-            System.out.println("No one wins");
-            return;
-        }
-        if (!winner.equals(Player.draw)) {
-            System.out.println(winner + " wins");
-            return;
-        }
-        System.out.println("Draw");
     }
 
 }
