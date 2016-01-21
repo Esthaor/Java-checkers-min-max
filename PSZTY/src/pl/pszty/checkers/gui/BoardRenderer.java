@@ -9,7 +9,6 @@ import pl.pszty.checkers.run.Game;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -120,6 +119,9 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         if (mainBoard.getWinner().equals(mainBoard.getHumanPlayer())) {
             title = "Wygrana";
             epicWin = "Gratulujemy wygranej! Co chcesz teraz zrobić?";
+        } else if (mainBoard.getWinner().equals(Player.draw)) {
+            title = "Remis";
+            epicWin = "Zremisowano. Co chcesz teraz zrobić?";
         } else {
             title = "Przegrana";
             epicWin = "Niestety, tym razem wygrał komputer. Co chcesz teraz zrobić?";
@@ -135,7 +137,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 options,
-                options[2]);
+                options[1]);
         if (n == JOptionPane.YES_OPTION) {
             displayDialog();
         } else if (n == JOptionPane.CANCEL_OPTION) {
