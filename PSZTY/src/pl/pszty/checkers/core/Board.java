@@ -18,9 +18,14 @@ import pl.pszty.checkers.enums.Player;
 public class Board {
 
     private final int DRAW_CONDITION = 15;
-    private final int PAWN_VALUE = 5;
-    private final int QUEEN_VALUE = 50;
+    private final int PAWN_VALUE = 20;
+    private final int QUEEN_VALUE = 70;
     private final int BEATING_POSSIBILITY = 30;
+    private final int FIRST_LVL_BONUS = 22;
+    private final int SECONT_LVL_BONUS = 6;
+    private final int THIRD_LVL_BONUS = 2;
+    private final int FIRST_ZONE_BONUS = 4;
+    private final int SECOND_ZONE_BONUS = 1;
 
     private FieldState board[][];
     private Player activePlayer;
@@ -1041,10 +1046,44 @@ public class Board {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (this.board[i][j].equals(myPawn)) {
+                    if (humanPlayer.equals(Player.white)) {
+                        if (i < 2) {
+                            value += FIRST_LVL_BONUS;
+                        } else if (i < 4) {
+                            value += SECONT_LVL_BONUS;
+                        } else if (i < 6) {
+                            value += THIRD_LVL_BONUS;
+                        }
+                    } else {
+                        if (i > 5) {
+                            value += FIRST_LVL_BONUS;
+                        } else if (i > 3) {
+                            value += SECONT_LVL_BONUS;
+                        } else if (i > 1) {
+                            value += THIRD_LVL_BONUS;
+                        }
+                    }
                     value += PAWN_VALUE;
                     value += BEATING_POSSIBILITY * (pawnBeatCount(i, j));
                 }// END OF MY PAWN
                 else if (this.board[i][j].equals(opponentPawn)) {
+                    if (humanPlayer.equals(Player.white)) {
+                        if (i > 5) {
+                            value -= FIRST_LVL_BONUS;
+                        } else if (i > 3) {
+                            value -= SECONT_LVL_BONUS;
+                        } else if (i > 1) {
+                            value -= THIRD_LVL_BONUS;
+                        }
+                    } else {
+                        if (i < 2) {
+                            value -= FIRST_LVL_BONUS;
+                        } else if (i < 4) {
+                            value -= SECONT_LVL_BONUS;
+                        } else if (i < 6) {
+                            value -= THIRD_LVL_BONUS;
+                        }
+                    }
                     value -= PAWN_VALUE;
                     value -= BEATING_POSSIBILITY * (pawnBeatCount(i, j));
                 }// END OF ENEMY PAWN
@@ -1056,6 +1095,21 @@ public class Board {
                     value -= QUEEN_VALUE;
                     value -= BEATING_POSSIBILITY * (queenBeatCount(i, j));
                 } // END OF ENEMY QUEEN
+
+                // ZONES ON BOARD. IT IS BETTER TO STAY NEAR EDGE.
+                if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                    if (i == 0 || i == 7 || j == 0 || j == 7) {
+                        value += FIRST_ZONE_BONUS;
+                    } else if (i == 1 || i == 6 || j == 1 || j == 6) {
+                        value += SECOND_ZONE_BONUS;
+                    }
+                } else if (this.board[i][j].equals(opponentPawn) || this.board[i][j].equals(opponentQueen)) {
+                    if (i == 0 || i == 7 || j == 0 || j == 7) {
+                        value -= FIRST_ZONE_BONUS;
+                    } else if (i == 1 || i == 6 || j == 1 || j == 6) {
+                        value -= SECOND_ZONE_BONUS;
+                    }
+                }
             }
         }
         return value;
