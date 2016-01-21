@@ -33,6 +33,7 @@ public final class Gameboard {
     }
 
     public void newGame() {
+        winner = Player.none;
         this.officialBoard = new Board();
     }
 
