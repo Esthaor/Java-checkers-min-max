@@ -18,13 +18,13 @@ import pl.pszty.checkers.enums.Player;
 public class Board {
 
     private final int DRAW_CONDITION = 15;
-    private final int PAWN_VALUE = 20;
-    private final int QUEEN_VALUE = 70;
+    private final int PAWN_VALUE = 10;
+    private final int QUEEN_VALUE = 60;
     private final int BEATING_POSSIBILITY = 30;
-    private final int FIRST_LVL_BONUS = 22;
-    private final int SECONT_LVL_BONUS = 6;
-    private final int THIRD_LVL_BONUS = 2;
-    private final int FIRST_ZONE_BONUS = 4;
+    private final int FIRST_LVL_BONUS = 20;
+    private final int SECOND_LVL_BONUS = 5;
+    private final int THIRD_LVL_BONUS = 3;
+    private final int FIRST_ZONE_BONUS = 3;
     private final int SECOND_ZONE_BONUS = 1;
     private final int DEFENCE_MULTIPLIER = 8;
     private final int GROUP_BONUS = 4;
@@ -1052,7 +1052,7 @@ public class Board {
                         if (i > 5) {
                             value += FIRST_LVL_BONUS;
                         } else if (i > 3) {
-                            value += SECONT_LVL_BONUS;
+                            value += SECOND_LVL_BONUS;
                         } else if (i > 1) {
                             value += THIRD_LVL_BONUS;
                         }
@@ -1066,7 +1066,7 @@ public class Board {
                         if (i < 2) {
                             value -= FIRST_LVL_BONUS;
                         } else if (i < 4) {
-                            value -= SECONT_LVL_BONUS;
+                            value -= SECOND_LVL_BONUS;
                         } else if (i < 6) {
                             value -= THIRD_LVL_BONUS;
                         }
