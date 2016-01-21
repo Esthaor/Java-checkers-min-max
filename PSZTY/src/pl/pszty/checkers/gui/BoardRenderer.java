@@ -43,9 +43,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     Player humanPlayer;
     JLabel currentPlayer;
     JLabel currentPlayerColor;
-    static private MyGlassPane myGlassPane;
     JMenuBar menuBar;
-    JCheckBox changeButton;
     private BoardState boardState;
     boolean firstGame = true;
 
@@ -65,131 +63,23 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         setLayout(new GridBagLayout());
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setTitle("Warcaby");
-        setSize(1000, 1000);
-        setPreferredSize(new Dimension(1000, 700));
+        setSize(1000, 720);
+        setPreferredSize(new Dimension(1000, 720));
         getIcons();
         setJMenuBar(createMenuBar());
         drawBoard();
         mainBoard = Gameboard.getInstance();
+        UIManager.put("OptionPane.cancelButtonText", "Anuluj");
+        UIManager.put("OptionPane.okButtonText", "OK");
         displayDialog();
         this.setResizable(true);
         this.pack();
         this.setLocationRelativeTo(null);
         this.setVisible(true);
-        boardState = mainBoard.getBoardState();
-    }
-
-    class MyGlassPane extends JComponent implements ItemListener {
-
-        public void itemStateChanged(ItemEvent e) {
-            setVisible(e.getStateChange() == ItemEvent.SELECTED);
-        }
-
-        public MyGlassPane(AbstractButton aButton, Container contentPane) {
-            CBListener listener = new CBListener(aButton, menuBar, this, contentPane);
-            addMouseListener(listener);
-            addMouseMotionListener(listener);
-        }
-    }
-
-    class CBListener extends MouseInputAdapter {
-
-        Toolkit toolkit;
-        Component liveButton;
-        JMenuBar menuBar;
-        MyGlassPane glassPane;
-        Container contentPane;
-
-        public CBListener(Component liveButton, JMenuBar menuBar,
-                          MyGlassPane glassPane, Container contentPane) {
-            toolkit = Toolkit.getDefaultToolkit();
-            this.liveButton = liveButton;
-            this.glassPane = glassPane;
-            this.menuBar = menuBar;
-            this.contentPane = contentPane;
-        }
-
-        public void mouseMoved(MouseEvent e) {
-            redispatchMouseEvent(e, false);
-        }
-
-        public void mouseDragged(MouseEvent e) {
-            redispatchMouseEvent(e, false);
-        }
-
-        public void mouseClicked(MouseEvent e) {
-            redispatchMouseEvent(e, false);
-        }
-
-        public void mouseEntered(MouseEvent e) {
-            redispatchMouseEvent(e, false);
-        }
-
-        public void mouseExited(MouseEvent e) {
-            redispatchMouseEvent(e, false);
-        }
-
-        public void mousePressed(MouseEvent e) {
-            redispatchMouseEvent(e, false);
-        }
-
-        public void mouseReleased(MouseEvent e) {
-            redispatchMouseEvent(e, true);
-        }
-
-        //A basic implementation of redispatching events.
-        private void redispatchMouseEvent(MouseEvent e,
-                                          boolean repaint) {
-            Point glassPanePoint = e.getPoint();
-            Container container = contentPane;
-            Point containerPoint = SwingUtilities.convertPoint(
-                    glassPane,
-                    glassPanePoint,
-                    contentPane);
-            if (containerPoint.y < 0) { //we're not in the content pane
-                if (containerPoint.y + menuBar.getHeight() >= 0) {
-                    glassPane.setVisible(false);
-                    //The mouse event is over the menu bar.
-                    //Could handle specially.
-                } else {
-                    //The mouse event is over non-system window
-                    //decorations, such as the ones provided by
-                    //the Java look and feel.
-                    //Could handle specially.
-                }
-            } else {
-                glassPane.setVisible(true);
-                //The mouse event is probably over the content pane.
-                //Find out exactly which component it's over.
-                Component component
-                        = SwingUtilities.getDeepestComponentAt(
-                        container,
-                        containerPoint.x,
-                        containerPoint.y);
-
-                if ((component != null)
-                        && (component.equals(liveButton))) {
-                    //Forward events over the check box.
-                    Point componentPoint = SwingUtilities.convertPoint(
-                            glassPane,
-                            glassPanePoint,
-                            component);
-                    component.dispatchEvent(new MouseEvent(component,
-                            e.getID(),
-                            e.getWhen(),
-                            e.getModifiers(),
-                            componentPoint.x,
-                            componentPoint.y,
-                            e.getClickCount(),
-                            e.isPopupTrigger()));
-                }
-            }
-        }
     }
 
     public void displayDialog() {
         JFrame frame = new JFrame();
-
         Object[] possibilities = {"biały", "czarny"};
         String s = (String) JOptionPane.showInputDialog(
                 frame,
@@ -199,21 +89,57 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 null,
                 possibilities,
                 "biały");
-        if (s.equals("czarny")) {
-            mainBoard.setHumanPlayer(Player.black);
+        if (((s != null) && (s.length() > 0))) {
+            if (s.equals("czarny")) {
+                mainBoard.setHumanPlayer(Player.black);
+            } else {
+                mainBoard.setHumanPlayer(Player.white);
+            }
+            mainBoard.newGame();
+            activePlayer = mainBoard.getActivePlayer();
+            humanPlayer = mainBoard.getHumanPlayer();
+            if (firstGame) {
+                drawFigures();
+                addGameInfo();
+                firstGame = false;
+            } else {
+                redrawFigures();
+                updateGameInfo();
+            }
+            mainBoard.setBoardState(new BoardState());
+            boardState = mainBoard.getBoardState();
         } else {
-            mainBoard.setHumanPlayer(Player.white);
+            if (firstGame) {
+                exit(0);
+            }
         }
-        mainBoard.newGame();
-        activePlayer = mainBoard.getActivePlayer();
-        humanPlayer = mainBoard.getHumanPlayer();
-        if (firstGame) {
-            drawFigures();
-            addGameInfo();
-            firstGame = false;
+    }
+
+    public void displayWinDialog() {
+        String epicWin, title;
+        if (mainBoard.getWinner().equals(mainBoard.getHumanPlayer())) {
+            title = "Wygrana";
+            epicWin = "Gratulujemy wygranej! Co chcesz teraz zrobić?";
         } else {
-            redrawFigures();
-            updateGameInfo();
+            title = "Przegrana";
+            epicWin = "Niestety, tym razem wygrał komputer. Co chcesz teraz zrobić?";
+        }
+        JFrame frame = new JFrame();
+        Object[] options = {"Nowa gra",
+                "Powrót do planszy",
+                "Wyjście z programu"};
+        int n = JOptionPane.showOptionDialog(frame,
+                epicWin,
+                title,
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[2]);
+        if (n == JOptionPane.YES_OPTION) {
+            displayDialog();
+        } else if (n == JOptionPane.CANCEL_OPTION) {
+            exit(0);
         }
     }
 
@@ -230,9 +156,9 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     public void addGameInfo() {
         GridBagConstraints c = new GridBagConstraints();
         currentPlayer = new JLabel("Aktualny gracz:");
-        currentPlayer.setFont(new Font("Comic Sans MS", Font.PLAIN, 18));
+        currentPlayer.setFont(new Font(null, Font.PLAIN, 18));
         currentPlayerColor = new JLabel();
-        currentPlayerColor.setFont(new Font("Comic Sans MS", Font.PLAIN, 14));
+        currentPlayerColor.setFont(new Font(null, Font.PLAIN, 14));
         if (activePlayer.equals(Player.black)) {
             currentPlayerColor.setText("czarny");
         } else if (activePlayer.equals(Player.white)) {
@@ -253,15 +179,6 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         c.gridx = 1;
         c.gridy = 0;
         c.weightx = 0.6;
-        changeButton
-                = new JCheckBox("Glass pane \"visible\"");
-        changeButton.setSelected(false);
-
-        //getContentPane().add(changeButton, c);
-        myGlassPane = new MyGlassPane(changeButton,
-                getContentPane());
-        //changeButton.addItemListener(myGlassPane);
-        setGlassPane(myGlassPane);
     }
 
     public void updateGameInfo() {
@@ -270,6 +187,10 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
             currentPlayerColor.setText("czarny");
         } else {
             currentPlayerColor.setText("biały");
+        }
+        if (!mainBoard.getWinner().equals(Player.none)) {
+            currentPlayerColor.setText("brak - koniec gry");
+            displayWinDialog();
         }
     }
 
@@ -341,22 +262,41 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     public void drawFigures() {
         Board copyOfOfficialBoard = mainBoard.getCoppyOfOfficialBoard();
         FieldState[][] fields = copyOfOfficialBoard.getBoard();
+        humanPlayer = mainBoard.getHumanPlayer();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if (fields[i][j].equals(FieldState.empty)) {
-                    continue;
-                } else if (fields[i][j].equals(FieldState.blackPawn)) {
-                    figure = new JLabel(blackPawn);
+                if (humanPlayer.equals(Player.black)) {
+                    if (fields[7 - i][7 - j].equals(FieldState.empty)) {
+                        continue;
+                    } else if (fields[7 - i][7 - j].equals(FieldState.blackPawn)) {
+                        figure = new JLabel(blackPawn);
 
-                } else if (fields[i][j].equals(FieldState.whitePawn)) {
-                    figure = new JLabel(whitePawn);
+                    } else if (fields[7 - i][7 - j].equals(FieldState.whitePawn)) {
+                        figure = new JLabel(whitePawn);
 
-                } else if (fields[i][j].equals(FieldState.blackQueen)) {
-                    figure = new JLabel(blackQueen);
+                    } else if (fields[7 - i][7 - j].equals(FieldState.blackQueen)) {
+                        figure = new JLabel(blackQueen);
 
-                } else if (fields[i][j].equals(FieldState.whiteQueen)) {
-                    figure = new JLabel(whiteQueen);
+                    } else if (fields[7 - i][7 - j].equals(FieldState.whiteQueen)) {
+                        figure = new JLabel(whiteQueen);
 
+                    }
+                } else {
+                    if (fields[i][j].equals(FieldState.empty)) {
+                        continue;
+                    } else if (fields[i][j].equals(FieldState.blackPawn)) {
+                        figure = new JLabel(blackPawn);
+
+                    } else if (fields[i][j].equals(FieldState.whitePawn)) {
+                        figure = new JLabel(whitePawn);
+
+                    } else if (fields[i][j].equals(FieldState.blackQueen)) {
+                        figure = new JLabel(blackQueen);
+
+                    } else if (fields[i][j].equals(FieldState.whiteQueen)) {
+                        figure = new JLabel(whiteQueen);
+
+                    }
                 }
                 JPanel panel = (JPanel) board.getComponent(i * 8 + j);
                 panel.add(figure);
@@ -367,28 +307,57 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
     public void redrawFigures() {
         Board copyOfOfficialBoard = mainBoard.getCoppyOfOfficialBoard();
         FieldState[][] fields = copyOfOfficialBoard.getBoard();
+        humanPlayer = mainBoard.getHumanPlayer();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if (fields[i][j].equals(FieldState.empty)) {
-                    JPanel panel = (JPanel) board.getComponent(i * 8 + j);
-                    panel.removeAll();
-                    panel.revalidate();
-                    panel.repaint();
-                    continue;
-                } else if (fields[i][j].equals(FieldState.blackPawn)) {
-                    figure = new JLabel(blackPawn);
-
-                } else if (fields[i][j].equals(FieldState.whitePawn)) {
-                    figure = new JLabel(whitePawn);
-
-                } else if (fields[i][j].equals(FieldState.blackQueen)) {
-                    figure = new JLabel(blackQueen);
-
-                } else if (fields[i][j].equals(FieldState.whiteQueen)) {
-                    figure = new JLabel(whiteQueen);
-
-                }
                 JPanel panel = (JPanel) board.getComponent(i * 8 + j);
+                if (humanPlayer.equals(Player.black)) {
+                    if (fields[7 - i][7 - j].equals(FieldState.empty)) {
+                        panel.removeAll();
+                        panel.revalidate();
+                        panel.repaint();
+                        continue;
+                    } else if (fields[7 - i][7 - j].equals(FieldState.blackPawn)) {
+                        panel.removeAll();
+                        figure = new JLabel(blackPawn);
+
+                    } else if (fields[7 - i][7 - j].equals(FieldState.whitePawn)) {
+                        panel.removeAll();
+                        figure = new JLabel(whitePawn);
+
+                    } else if (fields[7 - i][7 - j].equals(FieldState.blackQueen)) {
+                        panel.removeAll();
+                        figure = new JLabel(blackQueen);
+
+                    } else if (fields[7 - i][7 - j].equals(FieldState.whiteQueen)) {
+                        panel.removeAll();
+                        figure = new JLabel(whiteQueen);
+
+                    }
+                } else {
+                    if (fields[i][j].equals(FieldState.empty)) {
+                        panel.removeAll();
+                        panel.revalidate();
+                        panel.repaint();
+                        continue;
+                    } else if (fields[i][j].equals(FieldState.blackPawn)) {
+                        panel.removeAll();
+                        figure = new JLabel(blackPawn);
+
+                    } else if (fields[i][j].equals(FieldState.whitePawn)) {
+                        panel.removeAll();
+                        figure = new JLabel(whitePawn);
+
+                    } else if (fields[i][j].equals(FieldState.blackQueen)) {
+                        panel.removeAll();
+                        figure = new JLabel(blackQueen);
+
+                    } else if (fields[i][j].equals(FieldState.whiteQueen)) {
+                        panel.removeAll();
+                        figure = new JLabel(whiteQueen);
+
+                    }
+                }
                 panel.add(figure);
                 panel.revalidate();
                 panel.repaint();
@@ -424,11 +393,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         menuItem.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_F4, ActionEvent.ALT_MASK));
         menuItem.setToolTipText("Wyjdź z programu");
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                System.exit(0);
-            }
-        });
+        menuItem.addActionListener(event -> System.exit(0));
 
         menu.add(menuItem);
         menuBar.add(menu);
@@ -446,7 +411,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         figure = null;
         Component component = board.findComponentAt(e.getX(), e.getY());
         sourceField = (JPanel) component.getParent();
-        if (component instanceof JPanel) {
+        if (component instanceof JPanel || !mainBoard.getWinner().equals(Player.none)) {
             return;
         }
         JLabel pawnCheck = (JLabel) component;
@@ -505,12 +470,22 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                 sourceField.add(figure);
                 figure.setVisible(true);
             } else {
-
-                int fromColumn = sourceField.getX() / 75;
-                int fromRow = sourceField.getY() / 75;
-                int toColumn = c.getX() / 75;
-                int toRow = c.getY() / 75;
-
+                int fromColumn;
+                int fromRow;
+                int toColumn;
+                int toRow;
+                humanPlayer = mainBoard.getHumanPlayer();
+                if (humanPlayer.equals(Player.black)) {
+                    fromColumn = 7 - (sourceField.getX() / 75);
+                    fromRow = 7 - (sourceField.getY() / 75);
+                    toColumn = 7 - (c.getX() / 75);
+                    toRow = 7 - (c.getY() / 75);
+                } else {
+                    fromColumn = sourceField.getX() / 75;
+                    fromRow = sourceField.getY() / 75;
+                    toColumn = c.getX() / 75;
+                    toRow = c.getY() / 75;
+                }
                 Move move = new Move();
 
                 try {
@@ -525,12 +500,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                         redrawFigures();
                         activePlayer = mainBoard.getActivePlayer();
                         updateGameInfo();
-                        out.println(activePlayer);
-                        if (!mainBoard.getWinner().equals(Player.none)) {
-                            changeButton.setSelected(true);
-                        }
                     } else {
-                        out.println("chujnia");
                         sourceField.add(figure);
                         figure.setVisible(true);
                     }
@@ -540,12 +510,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
                         redrawFigures();
                         activePlayer = mainBoard.getActivePlayer();
                         updateGameInfo();
-                        out.println(activePlayer);
-                        if (!mainBoard.getWinner().equals(Player.none)) {
-                            changeButton.setSelected(true);
-                        }
                     } else {
-                        out.println("chujnia");
                         sourceField.add(figure);
                         figure.setVisible(true);
                     }
