@@ -27,8 +27,6 @@ public class Game {
     public static void main(String[] args) {
 
         Gameboard mainGame = Gameboard.getInstance();
-        mainGame.setHumanPlayer(Player.white);
-        mainGame.setBoardState(new BoardState());
 
         EventQueue.invokeLater(() -> {
             new BoardRenderer();
@@ -40,12 +38,6 @@ public class Game {
             Player activePlayer = mainGame.getActivePlayer();
 
             mainGame.displayOfficialBoard();
-
-            if (activePlayer.equals(Player.black)) {
-                System.out.println("Black player move");
-            } else {
-                System.out.println("White player move");
-            }
 
             userInput = new Scanner(System.in);
             String from = userInput.next();

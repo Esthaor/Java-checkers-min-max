@@ -83,7 +83,6 @@ public class BoardState {
         int row = 0, column = 0;
         for (int index = 0; index < 160; index++) {
             this.randomNumberedTable[row][column] = new Long(fromFile.get(index));
-            System.out.println(this.randomNumberedTable[row][column]);
             column = ++column % 5;
             if (column == 0) {
                 ++row;
@@ -245,7 +244,7 @@ public class BoardState {
     public void performThinkingAndMove() {
         Board board = gameboard.getCoppyOfOfficialBoard();
         long hash = countHashFunction(board);
-        minMaxAlphaBeta(hash, gameboard.getCoppyOfOfficialBoard(), 10);
+        minMaxAlphaBeta(hash, gameboard.getCoppyOfOfficialBoard(), 9);
 
         List<TranspositionTableCell> get = this.transpositionTable.get(hash);
         for (TranspositionTableCell ttc : get) {
@@ -254,6 +253,7 @@ public class BoardState {
                     gameboard.performWhitePlayerMovement(ttc.getBetaMove());
                 } else {
                     gameboard.performBlackPlayerMovement(ttc.getBetaMove());
+                    System.out.println(ttc.getBeta());
                 }
             }
         }

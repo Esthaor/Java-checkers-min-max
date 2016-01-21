@@ -18,9 +18,16 @@ import pl.pszty.checkers.enums.Player;
 public class Board {
 
     private final int DRAW_CONDITION = 15;
-    private final int PAWN_VALUE = 5;
-    private final int QUEEN_VALUE = 50;
+    private final int PAWN_VALUE = 10;
+    private final int QUEEN_VALUE = 60;
     private final int BEATING_POSSIBILITY = 30;
+    private final int FIRST_LVL_BONUS = 20;
+    private final int SECOND_LVL_BONUS = 5;
+    private final int THIRD_LVL_BONUS = 3;
+    private final int FIRST_ZONE_BONUS = 3;
+    private final int SECOND_ZONE_BONUS = 1;
+    private final int DEFENCE_MULTIPLIER = 8;
+    private final int GROUP_BONUS = 4;
 
     private FieldState board[][];
     private Player activePlayer;
@@ -826,21 +833,21 @@ public class Board {
                 if ((testedColumn >= 0) && (testedRow >= 0)) {
                     if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
                         count++;
-                        while ((testedColumn >= 0) && (testedRow >= 0) && this.board[testedRow][testedColumn].equals(FieldState.empty)) {
-                            Board tempBoard = new Board(this);
-                            Move move = new Move();
-                            try {
-                                move.setFrom(row, column);
-                                move.setTo(testedRow, testedColumn);
-                            } catch (Exception ex) {
-                                Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            if (tempBoard.performMovement(move)) {
-                                count += tempBoard.queenBeatCount(testedRow, testedColumn);
-                            }
-                            testedColumn--;
-                            testedRow--;
-                        }
+//                        while ((testedColumn >= 0) && (testedRow >= 0) && this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+//                            Board tempBoard = new Board(this);
+//                            Move move = new Move();
+//                            try {
+//                                move.setFrom(row, column);
+//                                move.setTo(testedRow, testedColumn);
+//                            } catch (Exception ex) {
+//                                Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+//                            }
+//                            if (tempBoard.performMovement(move)) {
+//                                count += tempBoard.queenBeatCount(testedRow, testedColumn);
+//                            }
+//                            testedColumn--;
+//                            testedRow--;
+//                        }
                     }
                 }
             }
@@ -863,22 +870,22 @@ public class Board {
                 if ((testedColumn >= 0) && (testedRow < 8)) {
                     if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
                         count++;
-                        while ((testedColumn >= 0) && (testedRow < 8) && this.board[testedRow][testedColumn].equals(FieldState.empty)) {
-
-                            Board tempBoard = new Board(this);
-                            Move move = new Move();
-                            try {
-                                move.setFrom(row, column);
-                                move.setTo(testedRow, testedColumn);
-                            } catch (Exception ex) {
-                                Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            if (tempBoard.performMovement(move)) {
-                                count += tempBoard.queenBeatCount(testedRow, testedColumn);
-                            }
-                            testedColumn--;
-                            testedRow++;
-                        }
+//                        while ((testedColumn >= 0) && (testedRow < 8) && this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+//
+//                            Board tempBoard = new Board(this);
+//                            Move move = new Move();
+//                            try {
+//                                move.setFrom(row, column);
+//                                move.setTo(testedRow, testedColumn);
+//                            } catch (Exception ex) {
+//                                Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+//                            }
+//                            if (tempBoard.performMovement(move)) {
+//                                count += tempBoard.queenBeatCount(testedRow, testedColumn);
+//                            }
+//                            testedColumn--;
+//                            testedRow++;
+//                        }
                     }
                 }
             }
@@ -901,21 +908,21 @@ public class Board {
                 if ((testedColumn < 8) && (testedRow >= 0)) {
                     if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
                         count++;
-                        while ((testedColumn < 8) && (testedRow >= 0) && this.board[testedRow][testedColumn].equals(FieldState.empty)) {
-                            Board tempBoard = new Board(this);
-                            Move move = new Move();
-                            try {
-                                move.setFrom(row, column);
-                                move.setTo(testedRow, testedColumn);
-                            } catch (Exception ex) {
-                                Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            if (tempBoard.performMovement(move)) {
-                                count += tempBoard.queenBeatCount(testedRow, testedColumn);
-                            }
-                            testedColumn++;
-                            testedRow--;
-                        }
+//                        while ((testedColumn < 8) && (testedRow >= 0) && this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+//                            Board tempBoard = new Board(this);
+//                            Move move = new Move();
+//                            try {
+//                                move.setFrom(row, column);
+//                                move.setTo(testedRow, testedColumn);
+//                            } catch (Exception ex) {
+//                                Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+//                            }
+//                            if (tempBoard.performMovement(move)) {
+//                                count += tempBoard.queenBeatCount(testedRow, testedColumn);
+//                            }
+//                            testedColumn++;
+//                            testedRow--;
+//                        }
                     }
                 }
             }
@@ -938,21 +945,21 @@ public class Board {
                 if ((testedColumn < 8) && (testedRow < 8)) {
                     if (this.board[testedRow][testedColumn].equals(FieldState.empty)) {
                         count++;
-                        while ((testedColumn < 8) && (testedRow < 8) && this.board[testedRow][testedColumn].equals(FieldState.empty)) {
-                            Board tempBoard = new Board(this);
-                            Move move = new Move();
-                            try {
-                                move.setFrom(row, column);
-                                move.setTo(testedRow, testedColumn);
-                            } catch (Exception ex) {
-                                Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            if (tempBoard.performMovement(move)) {
-                                count += tempBoard.queenBeatCount(testedRow, testedColumn);
-                            }
-                            testedColumn++;
-                            testedRow++;
-                        }
+//                        while ((testedColumn < 8) && (testedRow < 8) && this.board[testedRow][testedColumn].equals(FieldState.empty)) {
+//                            Board tempBoard = new Board(this);
+//                            Move move = new Move();
+//                            try {
+//                                move.setFrom(row, column);
+//                                move.setTo(testedRow, testedColumn);
+//                            } catch (Exception ex) {
+//                                Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+//                            }
+//                            if (tempBoard.performMovement(move)) {
+//                                count += tempBoard.queenBeatCount(testedRow, testedColumn);
+//                            }
+//                            testedColumn++;
+//                            testedRow++;
+//                        }
                     }
                 }
             }
@@ -1041,21 +1048,93 @@ public class Board {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (this.board[i][j].equals(myPawn)) {
+                    if (humanPlayer.equals(Player.black)) {
+                        if (i > 5) {
+                            value += FIRST_LVL_BONUS;
+                        } else if (i > 3) {
+                            value += SECOND_LVL_BONUS;
+                        } else if (i > 1) {
+                            value += THIRD_LVL_BONUS;
+                        }
+                    }
+                    value += groupCount(i, j) * GROUP_BONUS;
                     value += PAWN_VALUE;
-                    value += BEATING_POSSIBILITY * (pawnBeatCount(i, j));
+                    value += BEATING_POSSIBILITY * DEFENCE_MULTIPLIER * (pawnBeatCount(i, j));
                 }// END OF MY PAWN
                 else if (this.board[i][j].equals(opponentPawn)) {
+                    if (humanPlayer.equals(Player.black)) {
+                        if (i < 2) {
+                            value -= FIRST_LVL_BONUS;
+                        } else if (i < 4) {
+                            value -= SECOND_LVL_BONUS;
+                        } else if (i < 6) {
+                            value -= THIRD_LVL_BONUS;
+                        }
+                    }
+                    value -= groupCount(i, j) * GROUP_BONUS;
                     value -= PAWN_VALUE;
                     value -= BEATING_POSSIBILITY * (pawnBeatCount(i, j));
                 }// END OF ENEMY PAWN
                 else if (this.board[i][j].equals(myQueen)) {
+                    value += groupCount(i, j) * GROUP_BONUS;
                     value += QUEEN_VALUE;
-                    value += BEATING_POSSIBILITY * (queenBeatCount(i, j));
+                    value += BEATING_POSSIBILITY * DEFENCE_MULTIPLIER * (queenBeatCount(i, j));
                 } // END OF MY QUEEN
                 else if (this.board[i][j].equals(opponentQueen)) {
+                    value -= groupCount(i, j) * GROUP_BONUS;
                     value -= QUEEN_VALUE;
                     value -= BEATING_POSSIBILITY * (queenBeatCount(i, j));
                 } // END OF ENEMY QUEEN
+
+                // ZONES ON BOARD. IT IS BETTER TO STAY NEAR EDGE.
+                if (this.board[i][j].equals(opponentPawn) || this.board[i][j].equals(opponentQueen)) {
+                    if ((i >= 2 && i <= 5) || (j >= 2 && j <= 5)) {
+                        value -= FIRST_ZONE_BONUS;
+                    } else if (i == 1 || i == 6 || j == 1 || j == 6) {
+                        value -= SECOND_ZONE_BONUS;
+                    }
+                } else if (this.board[i][j].equals(opponentPawn) || this.board[i][j].equals(opponentQueen)) {
+                    if ((i >= 2 && i <= 5) || (j >= 2 && j <= 5)) {
+                        value -= FIRST_ZONE_BONUS;
+                    } else if (i == 1 || i == 6 || j == 1 || j == 6) {
+                        value -= SECOND_ZONE_BONUS;
+                    }
+                }
+            }
+        }
+        return value;
+    }
+
+    private int groupCount(int row, int column) {
+        int value = 0;
+        FieldState myPawn;
+        FieldState myQueen;
+        FieldState opponentPawn;
+        FieldState opponentQueen;
+
+        if (this.board[row][column].equals(FieldState.whitePawn) || this.board[row][column].equals(FieldState.whiteQueen)) {
+            myPawn = FieldState.whitePawn;
+            myQueen = FieldState.whiteQueen;
+            opponentPawn = FieldState.blackPawn;
+            opponentQueen = FieldState.blackQueen;
+        } else {
+            myPawn = FieldState.blackPawn;
+            myQueen = FieldState.blackQueen;
+            opponentPawn = FieldState.whitePawn;
+            opponentQueen = FieldState.whiteQueen;
+        }
+
+        for (int i = row - 1; i <= row + 1; i += 2) {
+            if ((i < 0) || (i >= 8)) {
+                continue;
+            }
+            for (int j = column - 1; j <= column + 1; j += 2) {
+                if ((j < 0) || (j >= 8)) {
+                    continue;
+                }
+                if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
+                    value++;
+                }
             }
         }
         return value;
