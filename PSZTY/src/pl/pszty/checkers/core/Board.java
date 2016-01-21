@@ -1046,15 +1046,7 @@ public class Board {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (this.board[i][j].equals(myPawn)) {
-                    if (humanPlayer.equals(Player.white)) {
-                        if (i < 2) {
-                            value += FIRST_LVL_BONUS;
-                        } else if (i < 4) {
-                            value += SECONT_LVL_BONUS;
-                        } else if (i < 6) {
-                            value += THIRD_LVL_BONUS;
-                        }
-                    } else {
+                    if (humanPlayer.equals(Player.black)) {
                         if (i > 5) {
                             value += FIRST_LVL_BONUS;
                         } else if (i > 3) {
@@ -1067,15 +1059,7 @@ public class Board {
                     value += BEATING_POSSIBILITY * (pawnBeatCount(i, j));
                 }// END OF MY PAWN
                 else if (this.board[i][j].equals(opponentPawn)) {
-                    if (humanPlayer.equals(Player.white)) {
-                        if (i > 5) {
-                            value -= FIRST_LVL_BONUS;
-                        } else if (i > 3) {
-                            value -= SECONT_LVL_BONUS;
-                        } else if (i > 1) {
-                            value -= THIRD_LVL_BONUS;
-                        }
-                    } else {
+                    if (humanPlayer.equals(Player.black)) {
                         if (i < 2) {
                             value -= FIRST_LVL_BONUS;
                         } else if (i < 4) {
@@ -1097,13 +1081,7 @@ public class Board {
                 } // END OF ENEMY QUEEN
 
                 // ZONES ON BOARD. IT IS BETTER TO STAY NEAR EDGE.
-                if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
-                    if (i == 0 || i == 7 || j == 0 || j == 7) {
-                        value += FIRST_ZONE_BONUS;
-                    } else if (i == 1 || i == 6 || j == 1 || j == 6) {
-                        value += SECOND_ZONE_BONUS;
-                    }
-                } else if (this.board[i][j].equals(opponentPawn) || this.board[i][j].equals(opponentQueen)) {
+                if (this.board[i][j].equals(opponentPawn) || this.board[i][j].equals(opponentQueen)) {
                     if (i == 0 || i == 7 || j == 0 || j == 7) {
                         value -= FIRST_ZONE_BONUS;
                     } else if (i == 1 || i == 6 || j == 1 || j == 6) {
