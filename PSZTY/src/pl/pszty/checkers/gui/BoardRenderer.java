@@ -138,6 +138,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
             title = "Przegrana";
             epicWin = "Niestety, tym razem wygrał komputer. Co chcesz teraz zrobić?";
         }
+        redrawFigures();
         JFrame frame = new JFrame();
         Object[] options = {"Nowa gra",
                 "Powrót do planszy",
@@ -181,15 +182,17 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         humanPlayer = mainBoard.getHumanPlayer();
         if ((!activePlayer.equals(humanPlayer)) && mainBoard.getWinner().equals(Player.none)) {
             if (mainBoard.getWinner().equals(Player.none)) {
-                boardState.performThinkingAndMove();
+                 boardState.performThinkingAndMove();
             }
             updateGameInfo();
             hashCount.setText(Integer.toString(boardState.getHashCount()));
             graphCount.setText(Integer.toString(boardState.getBoardCount()));
             lastCell = boardState.getLastCell();
-            alphaValue.setText(Integer.toString(lastCell.getAlpha()));
-            betaValue.setText(Integer.toString(lastCell.getBeta()));
-            searchDepth.setText(Integer.toString(lastCell.getSearchingDepth()));
+            if(lastCell != null) {
+                alphaValue.setText(Integer.toString(lastCell.getAlpha()));
+                betaValue.setText(Integer.toString(lastCell.getBeta()));
+                searchDepth.setText(Integer.toString(lastCell.getSearchingDepth()));
+            }
             redrawFigures();
         }
     }
