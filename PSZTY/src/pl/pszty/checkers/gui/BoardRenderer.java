@@ -263,6 +263,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         panel.add(searchDepth);
         panel.add(new JLabel());
         Button displayHashTable = new Button("Wyświetl tablicę HT");
+        displayHashTable.setFocusable(false);
         displayHashTable.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 hashTableDialog();
