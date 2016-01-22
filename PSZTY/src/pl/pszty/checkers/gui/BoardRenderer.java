@@ -138,6 +138,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
             title = "Przegrana";
             epicWin = "Niestety, tym razem wygrał komputer. Co chcesz teraz zrobić?";
         }
+        redrawFigures();
         JFrame frame = new JFrame();
         Object[] options = {"Nowa gra",
                 "Powrót do planszy",
@@ -181,15 +182,17 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         humanPlayer = mainBoard.getHumanPlayer();
         if ((!activePlayer.equals(humanPlayer)) && mainBoard.getWinner().equals(Player.none)) {
             if (mainBoard.getWinner().equals(Player.none)) {
-                boardState.performThinkingAndMove();
+                 boardState.performThinkingAndMove();
             }
             updateGameInfo();
             hashCount.setText(Integer.toString(boardState.getHashCount()));
             graphCount.setText(Integer.toString(boardState.getBoardCount()));
             lastCell = boardState.getLastCell();
-            alphaValue.setText(Integer.toString(lastCell.getAlpha()));
-            betaValue.setText(Integer.toString(lastCell.getBeta()));
-            searchDepth.setText(Integer.toString(lastCell.getSearchingDepth()));
+            if(lastCell != null) {
+                alphaValue.setText(Integer.toString(lastCell.getAlpha()));
+                betaValue.setText(Integer.toString(lastCell.getBeta()));
+                searchDepth.setText(Integer.toString(lastCell.getSearchingDepth()));
+            }
             redrawFigures();
         }
     }
@@ -263,6 +266,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         panel.add(searchDepth);
         panel.add(new JLabel());
         Button displayHashTable = new Button("Wyświetl tablicę HT");
+        displayHashTable.setFocusable(false);
         displayHashTable.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 hashTableDialog();
@@ -500,116 +504,119 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
 
     @Override
     public void mousePressed(MouseEvent e) {
-        figure = null;
-        Component component = board.findComponentAt(e.getX(), e.getY());
-        sourceField = (JPanel) component.getParent();
-        if (component instanceof JPanel || !mainBoard.getWinner().equals(Player.none)) {
-            return;
-        }
-        JLabel pawnCheck = (JLabel) component;
-        humanPlayer = mainBoard.getHumanPlayer();
-        activePlayer = mainBoard.getActivePlayer();
-        String iconID;
-        iconID = ((ImageIcon) pawnCheck.getIcon()).getDescription();
-        if (humanPlayer.equals(activePlayer)) {
-            if (humanPlayer.equals(Player.white) && (iconID.equals("blackPawn") || iconID.equals("blackQueen"))) {
+        if(e.getButton() == MouseEvent.BUTTON1) {
+            figure = null;
+            Component component = board.findComponentAt(e.getX(), e.getY());
+            sourceField = (JPanel) component.getParent();
+            if (component instanceof JPanel || !mainBoard.getWinner().equals(Player.none)) {
                 return;
             }
-            if (humanPlayer.equals(Player.black) && (iconID.equals("whitePawn") || iconID.equals("whiteQueen"))) {
+            JLabel pawnCheck = (JLabel) component;
+            humanPlayer = mainBoard.getHumanPlayer();
+            activePlayer = mainBoard.getActivePlayer();
+            String iconID;
+            iconID = ((ImageIcon) pawnCheck.getIcon()).getDescription();
+            if (humanPlayer.equals(activePlayer)) {
+                if (humanPlayer.equals(Player.white) && (iconID.equals("blackPawn") || iconID.equals("blackQueen"))) {
+                    return;
+                }
+                if (humanPlayer.equals(Player.black) && (iconID.equals("whitePawn") || iconID.equals("whiteQueen"))) {
+                    return;
+                }
+            } else {
                 return;
             }
-        } else {
-            return;
-        }
-        sourceMoveLocation = component.getParent().getLocation();
+            sourceMoveLocation = component.getParent().getLocation();
 
-        xCorrection = sourceMoveLocation.x - e.getX();
-        yCorrection = sourceMoveLocation.y - e.getY();
-        figure = (JLabel) component;
-        figure.setLocation(e.getX(), e.getY());
-        guiContainer.add(figure, JLayeredPane.DRAG_LAYER);
-        guiContainer.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+            xCorrection = sourceMoveLocation.x - e.getX();
+            yCorrection = sourceMoveLocation.y - e.getY();
+            figure = (JLabel) component;
+            figure.setLocation(e.getX(), e.getY());
+            guiContainer.add(figure, JLayeredPane.DRAG_LAYER);
+            guiContainer.setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        guiContainer.setCursor(null);
-        if (figure == null) {
-            return;
-        }
+        if(e.getButton() == MouseEvent.BUTTON1) {
+            guiContainer.setCursor(null);
+            if (figure == null) {
+                return;
+            }
 
-        figure.setVisible(false);
+            figure.setVisible(false);
 
-        //upuszczenie figury w granicach szachownicy
-        int xMax = guiContainer.getWidth() - figure.getWidth();
-        int x = Math.min(e.getX(), xMax);
-        x = Math.max(x, 0);
+            //upuszczenie figury w granicach szachownicy
+            int xMax = guiContainer.getWidth() - figure.getWidth();
+            int x = Math.min(e.getX(), xMax);
+            x = Math.max(x, 0);
 
-        int yMax = guiContainer.getHeight() - figure.getHeight();
-        int y = Math.min(e.getY(), yMax);
-        y = Math.max(y, 0);
+            int yMax = guiContainer.getHeight() - figure.getHeight();
+            int y = Math.min(e.getY(), yMax);
+            y = Math.max(y, 0);
 
-        Component c = guiContainer.findComponentAt(x, y); //component to FieldPanel w przypadku opuszczenia na puste pole
+            Component c = guiContainer.findComponentAt(x, y); //component to FieldPanel w przypadku opuszczenia na puste pole
 
-        if (c instanceof JLabel) { //jest już figura na polu
-            sourceField.add(figure);
-            figure.setVisible(true);
-        } else { //figury brak - wyślij zapytanie do silnika
-            destinationMoveLocation = c.getLocation();
-
-            if (destinationMoveLocation.equals(sourceMoveLocation)) //ruch na to samo pole
-            {
+            if (c instanceof JLabel) { //jest już figura na polu
                 sourceField.add(figure);
                 figure.setVisible(true);
-            } else {
-                int fromColumn;
-                int fromRow;
-                int toColumn;
-                int toRow;
-                humanPlayer = mainBoard.getHumanPlayer();
-                if (humanPlayer.equals(Player.black)) {
-                    fromColumn = 7 - (sourceField.getX() / 75);
-                    fromRow = 7 - (sourceField.getY() / 75);
-                    toColumn = 7 - (c.getX() / 75);
-                    toRow = 7 - (c.getY() / 75);
-                } else {
-                    fromColumn = sourceField.getX() / 75;
-                    fromRow = sourceField.getY() / 75;
-                    toColumn = c.getX() / 75;
-                    toRow = c.getY() / 75;
-                }
-                Move move = new Move();
+            } else { //figury brak - wyślij zapytanie do silnika
+                destinationMoveLocation = c.getLocation();
 
-                try {
-                    move.setFrom(fromRow, fromColumn);
-                    move.setTo(toRow, toColumn);
-                } catch (Exception ex) {
-                    Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                humanPlayer = mainBoard.getHumanPlayer();
-                if (activePlayer.equals(Player.white) && humanPlayer.equals(Player.white)) {
-                    if (mainBoard.performWhitePlayerMovement(move)) {
-                        redrawFigures();
-                        activePlayer = mainBoard.getActivePlayer();
-                        updateGameInfo();
+                if (destinationMoveLocation.equals(sourceMoveLocation)) //ruch na to samo pole
+                {
+                    sourceField.add(figure);
+                    figure.setVisible(true);
+                } else {
+                    int fromColumn;
+                    int fromRow;
+                    int toColumn;
+                    int toRow;
+                    humanPlayer = mainBoard.getHumanPlayer();
+                    if (humanPlayer.equals(Player.black)) {
+                        fromColumn = 7 - (sourceField.getX() / 75);
+                        fromRow = 7 - (sourceField.getY() / 75);
+                        toColumn = 7 - (c.getX() / 75);
+                        toRow = 7 - (c.getY() / 75);
                     } else {
-                        sourceField.add(figure);
-                        figure.setVisible(true);
+                        fromColumn = sourceField.getX() / 75;
+                        fromRow = sourceField.getY() / 75;
+                        toColumn = c.getX() / 75;
+                        toRow = c.getY() / 75;
                     }
-                }
-                if (activePlayer.equals(Player.black) && humanPlayer.equals(Player.black)) {
-                    if (mainBoard.performBlackPlayerMovement(move)) {
-                        redrawFigures();
-                        activePlayer = mainBoard.getActivePlayer();
-                        updateGameInfo();
-                    } else {
-                        sourceField.add(figure);
-                        figure.setVisible(true);
+                    Move move = new Move();
+
+                    try {
+                        move.setFrom(fromRow, fromColumn);
+                        move.setTo(toRow, toColumn);
+                    } catch (Exception ex) {
+                        Logger.getLogger(Game.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    humanPlayer = mainBoard.getHumanPlayer();
+                    if (activePlayer.equals(Player.white) && humanPlayer.equals(Player.white)) {
+                        if (mainBoard.performWhitePlayerMovement(move)) {
+                            redrawFigures();
+                            activePlayer = mainBoard.getActivePlayer();
+                            updateGameInfo();
+                        } else {
+                            sourceField.add(figure);
+                            figure.setVisible(true);
+                        }
+                    }
+                    if (activePlayer.equals(Player.black) && humanPlayer.equals(Player.black)) {
+                        if (mainBoard.performBlackPlayerMovement(move)) {
+                            redrawFigures();
+                            activePlayer = mainBoard.getActivePlayer();
+                            updateGameInfo();
+                        } else {
+                            sourceField.add(figure);
+                            figure.setVisible(true);
+                        }
                     }
                 }
             }
         }
-
     }
 
     @Override
