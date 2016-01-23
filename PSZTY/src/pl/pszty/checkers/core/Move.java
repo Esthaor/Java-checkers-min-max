@@ -5,7 +5,6 @@ package pl.pszty.checkers.core;
  * @author Grzegorz Majchrzak
  * @date 2016-01-08 18:51:40
  *
- * Data transfer class only, does not check if move is valid.
  */
 public class Move {
 
