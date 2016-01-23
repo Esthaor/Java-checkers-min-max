@@ -17,7 +17,7 @@ import pl.pszty.checkers.enums.Player;
  */
 public class Board {
 
-    private final int DRAW_CONDITION = 15;
+    private final int DRAW_CONDITION = 20;
     private final int PAWN_VALUE = 5;
     private final int QUEEN_VALUE = 50;
     private final int BEATING_POSSIBILITY = 30;
@@ -26,7 +26,7 @@ public class Board {
     private final int THIRD_LVL_BONUS = 1;
     private final int FIRST_ZONE_BONUS = 2;
     private final int SECOND_ZONE_BONUS = 1;
-    private final int DEFENCE_MULTIPLIER = 20;
+    private final int DEFENCE_MULTIPLIER = 10;
     private final int GROUP_BONUS = 4;
 
     private FieldState board[][];
@@ -1028,48 +1028,70 @@ public class Board {
     public int getBoardEvaluation() {
         int value = 0;
         Player humanPlayer = Gameboard.getInstance().getHumanPlayer();
-        FieldState myPawn;
-        FieldState myQueen;
-        FieldState opponentPawn;
-        FieldState opponentQueen;
-
+        FieldState humanPawn;
+        FieldState humanQueen;
+        FieldState computerPawn;
+        FieldState computerQueen;
         if (humanPlayer.equals(Player.white)) {
-            myPawn = FieldState.whitePawn;
-            myQueen = FieldState.whiteQueen;
-            opponentPawn = FieldState.blackPawn;
-            opponentQueen = FieldState.blackQueen;
+            humanPawn = FieldState.whitePawn;
+            humanQueen = FieldState.whiteQueen;
+            computerPawn = FieldState.blackPawn;
+            computerQueen = FieldState.blackQueen;
         } else {
-            myPawn = FieldState.blackPawn;
-            myQueen = FieldState.blackQueen;
-            opponentPawn = FieldState.whitePawn;
-            opponentQueen = FieldState.whiteQueen;
+            humanPawn = FieldState.blackPawn;
+            humanQueen = FieldState.blackQueen;
+            computerPawn = FieldState.whitePawn;
+            computerQueen = FieldState.whiteQueen;
         }
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if (this.board[i][j].equals(myPawn)) {
-                    if (humanPlayer.equals(Player.black)) {
-                        if (i > 5) {
-                            value += THIRD_LVL_BONUS;
-                        } else if (i > 3) {
-                            value += SECOND_LVL_BONUS;
-                        } else if (i > 1) {
-                            value += FIRST_LVL_BONUS;
-                        }
-                    } else {
-                        if (i < 2) {
-                            value += FIRST_LVL_BONUS;
-                        } else if (i < 4) {
-                            value += SECOND_LVL_BONUS;
-                        } else if (i < 6) {
-                            value += THIRD_LVL_BONUS;
-                        }
-                    }
+                if (this.board[i][j].equals(humanPawn)) {
                     value += PAWN_VALUE;
-                    value += BEATING_POSSIBILITY * DEFENCE_MULTIPLIER * (pawnBeatCount(i, j));
-                }// END OF MY PAWN
-                else if (this.board[i][j].equals(opponentPawn)) {
-                    if (humanPlayer.equals(Player.black)) {
+                    value += groupCount(i, j) * GROUP_BONUS;
+                    if (this.activePlayer.equals(humanPlayer)) {
+                        value += pawnBeatCount(i, j) * BEATING_POSSIBILITY;
+                    }
+                    if (humanPlayer.equals(Player.white)) {
+                        if (i < 2) {
+                            value += FIRST_LVL_BONUS;
+                        } else if (i < 4) {
+                            value += SECOND_LVL_BONUS;
+                        } else if (i < 6) {
+                            value += THIRD_LVL_BONUS;
+                        }
+                    } else {
+                        if (i > 5) {
+                            value += FIRST_LVL_BONUS;
+                        } else if (i > 3) {
+                            value += SECOND_LVL_BONUS;
+                        } else if (i > 1) {
+                            value += THIRD_LVL_BONUS;
+                        }
+                    }
+                    if ((i == 1 || i == 6) && (j == 1 || j == 6)) {
+                        value += SECOND_ZONE_BONUS;
+                    }
+                    if (i > 1 && i < 6 && j > 1 && j < 6) {
+                        value += FIRST_ZONE_BONUS;
+                    }
+                }
+                if (this.board[i][j].equals(computerPawn)) {
+                    value -= PAWN_VALUE * DEFENCE_MULTIPLIER;
+                    value -= groupCount(i, j) * GROUP_BONUS;
+                    if (!this.activePlayer.equals(humanPlayer)) {
+                        value -= pawnBeatCount(i, j) * BEATING_POSSIBILITY;
+                    }
+                    if (humanPlayer.equals(Player.white)) {
+                        if (i > 5) {
+                            value -= FIRST_LVL_BONUS;
+                        } else if (i > 3) {
+                            value -= SECOND_LVL_BONUS;
+                        } else if (i > 1) {
+                            value -= THIRD_LVL_BONUS;
+                        }
+
+                    } else {
                         if (i < 2) {
                             value -= FIRST_LVL_BONUS;
                         } else if (i < 4) {
@@ -1077,44 +1099,53 @@ public class Board {
                         } else if (i < 6) {
                             value -= THIRD_LVL_BONUS;
                         }
-                    } else {
-                        if (i > 5) {
-                            value -= THIRD_LVL_BONUS;
-                        } else if (i > 3) {
-                            value -= SECOND_LVL_BONUS;
-                        } else if (i > 1) {
-                            value -= FIRST_LVL_BONUS;
-                        }
                     }
-                    value -= groupCount(i, j) * GROUP_BONUS;
-                    value -= PAWN_VALUE;
-                    value -= BEATING_POSSIBILITY * (pawnBeatCount(i, j));
-                }// END OF ENEMY PAWN
-                else if (this.board[i][j].equals(myQueen)) {
-                    value += QUEEN_VALUE;
-                    value += BEATING_POSSIBILITY * DEFENCE_MULTIPLIER * (queenBeatCount(i, j));
-                } // END OF MY QUEEN
-                else if (this.board[i][j].equals(opponentQueen)) {
-                    value -= QUEEN_VALUE;
-                    value -= BEATING_POSSIBILITY * (queenBeatCount(i, j));
-                } // END OF ENEMY QUEEN
-
-                // ZONES ON BOARD. IT IS BETTER TO STAY NEAR EDGE.
-                if (this.board[i][j].equals(opponentPawn) || this.board[i][j].equals(opponentQueen)) {
-                    if ((i >= 2 && i <= 5) || (j >= 2 && j <= 5)) {
-                        value -= FIRST_ZONE_BONUS;
-                    } else if (i == 1 || i == 6 || j == 1 || j == 6) {
+                    if ((i == 1 || i == 6) && (j == 1 || j == 6)) {
                         value -= SECOND_ZONE_BONUS;
                     }
-                } else if (this.board[i][j].equals(myPawn) || this.board[i][j].equals(myQueen)) {
-                    if ((i >= 2 && i <= 5) && (j >= 2 && j <= 5)) {
-                        value += FIRST_ZONE_BONUS;
-                    } else if ((i == 1 || i == 6) && (j == 1 || j == 6)) {
+                    if (i > 1 && i < 6 && j > 1 && j < 6) {
+                        value -= FIRST_ZONE_BONUS;
+                    }
+                }
+                if (this.board[i][j].equals(humanQueen)) {
+                    value += QUEEN_VALUE;
+                    if (this.activePlayer.equals(humanPlayer)) {
+                        value += queenBeatCount(i, j) * BEATING_POSSIBILITY;
+                    }
+                    if ((i == 1 || i == 6) && (j == 1 || j == 6)) {
                         value += SECOND_ZONE_BONUS;
+                    }
+                    if (i > 1 && i < 6 && j > 1 && j < 6) {
+                        value += FIRST_ZONE_BONUS;
+                    }
+                    if ((i == 1 || i == 6) && (j == 1 || j == 6)) {
+                        value += SECOND_ZONE_BONUS;
+                    }
+                    if (i > 1 && i < 6 && j > 1 && j < 6) {
+                        value += FIRST_ZONE_BONUS;
+                    }
+                }
+                if (this.board[i][j].equals(computerQueen)) {
+                    value -= QUEEN_VALUE * DEFENCE_MULTIPLIER;
+                    if (!this.activePlayer.equals(humanPlayer)) {
+                        value -= queenBeatCount(i, j) * BEATING_POSSIBILITY;
+                    }
+                    if ((i == 1 || i == 6) && (j == 1 || j == 6)) {
+                        value -= SECOND_ZONE_BONUS;
+                    }
+                    if (i > 1 && i < 6 && j > 1 && j < 6) {
+                        value -= FIRST_ZONE_BONUS;
+                    }
+                    if ((i == 1 || i == 6) && (j == 1 || j == 6)) {
+                        value -= SECOND_ZONE_BONUS;
+                    }
+                    if (i > 1 && i < 6 && j > 1 && j < 6) {
+                        value -= FIRST_ZONE_BONUS;
                     }
                 }
             }
         }
+
         return value;
     }
 
@@ -1182,7 +1213,7 @@ public class Board {
             opositeQueen = FieldState.blackQueen;
         }
 
-        HashMap<Board, Move> possibleMoves = new HashMap<>();
+        Map<Board, Move> possibleMoves = new HashMap<>();
 
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
@@ -1519,6 +1550,7 @@ public class Board {
                 }
             }
         }
+
         return possibleMoves;
     }
 
