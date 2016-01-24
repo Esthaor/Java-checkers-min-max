@@ -1192,22 +1192,6 @@ public class Board {
         return value;
     }
 
-    /**
-     * DO NOT USE THIS! TESTS ONLY!
-     */
-    public void prepereQueenTest() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                this.board[i][j] = FieldState.empty;
-            }
-        }
-
-        this.board[0][1] = this.board[0][3] = this.board[0][5] = FieldState.blackQueen;
-        this.board[2][1] = this.board[2][3] = FieldState.blackPawn;
-        this.board[7][2] = this.board[7][4] = this.board[7][6] = FieldState.whiteQueen;
-        this.board[5][4] = this.board[5][6] = FieldState.whitePawn;
-    }
-
     public Map<Board, Move> getPossibleMoves() {
 
         FieldState myPawn;
@@ -1566,49 +1550,6 @@ public class Board {
         }
 
         return possibleMoves;
-    }
-
-    /**
-     * DO NOT USE THIS! TESTS ONLY!
-     */
-    public void prepereBlackWinTest() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                this.board[i][j] = FieldState.empty;
-            }
-        }
-
-        this.board[0][1] = this.board[0][3] = this.board[0][5] = FieldState.blackQueen;
-        this.board[2][1] = this.board[2][3] = FieldState.blackPawn;
-    }
-
-    /**
-     * DO NOT USE THIS! TESTS ONLY!
-     */
-    public void prepereWhiteWinTest() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                this.board[i][j] = FieldState.empty;
-            }
-        }
-
-        this.board[7][2] = this.board[7][4] = this.board[7][6] = FieldState.whiteQueen;
-        this.board[5][4] = this.board[5][6] = FieldState.whitePawn;
-    }
-
-    /**
-     * DO NOT USE THIS! TESTS ONLY!
-     */
-    public void prepereCannotMoveTest() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                this.board[i][j] = FieldState.empty;
-            }
-        }
-
-        this.board[4][6] = this.board[3][5] = FieldState.blackPawn;
-        this.board[5][7] = FieldState.whitePawn;
-        this.activePlayer = Player.white;
     }
 
     public FieldState[][] getBoard() {
