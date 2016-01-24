@@ -17,7 +17,7 @@ import pl.pszty.checkers.enums.Player;
  */
 public class Board {
 
-    private final int DRAW_CONDITION = 20;
+    private final int DRAW_CONDITION = 30;
     private final int PAWN_VALUE = 5;
     private final int QUEEN_VALUE = 50;
     private final int BEATING_POSSIBILITY = 30;
@@ -26,8 +26,8 @@ public class Board {
     private final int THIRD_LVL_BONUS = 1;
     private final int FIRST_ZONE_BONUS = 2;
     private final int SECOND_ZONE_BONUS = 1;
-    private final int DEFENCE_MULTIPLIER = 10;
-    private final int GROUP_BONUS = 4;
+    private final int DEFENCE_MULTIPLIER = 3;
+    private final int GROUP_BONUS = 1;
 
     private FieldState board[][];
     private Player activePlayer;
@@ -1028,6 +1028,20 @@ public class Board {
     public int getBoardEvaluation() {
         int value = 0;
         Player humanPlayer = Gameboard.getInstance().getHumanPlayer();
+        Player tellMeTheWinner = tellMeTheWinner();
+        Player opp;
+        if (humanPlayer.equals(Player.white)) {
+            opp = Player.black;
+        } else {
+            opp = Player.white;
+        }
+
+        if (tellMeTheWinner.equals(humanPlayer)) {
+            return Integer.MAX_VALUE;
+        } else if (tellMeTheWinner.equals(opp) || tellMeTheWinner.equals(Player.draw)) {
+            return Integer.MIN_VALUE;
+        }
+
         FieldState humanPawn;
         FieldState humanQueen;
         FieldState computerPawn;
