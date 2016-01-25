@@ -249,7 +249,7 @@ public class BoardRenderer extends JFrame implements MouseListener, MouseMotionL
         alphaValue.setFont(new Font(null, Font.PLAIN, 14));
         panel.add(alphaValue);
         panel.add(new JLabel());
-        JLabel betaInfo = new JLabel("Wartośc beta");
+        JLabel betaInfo = new JLabel("Wartość beta");
         betaInfo.setFont(new Font(null, Font.PLAIN, 16));
         panel.add(betaInfo);
         betaValue = new JLabel();

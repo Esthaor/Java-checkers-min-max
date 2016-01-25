@@ -1028,20 +1028,6 @@ public class Board {
     public int getBoardEvaluation() {
         int value = 0;
         Player humanPlayer = Gameboard.getInstance().getHumanPlayer();
-        Player tellMeTheWinner = tellMeTheWinner();
-        Player opp;
-        if (humanPlayer.equals(Player.white)) {
-            opp = Player.black;
-        } else {
-            opp = Player.white;
-        }
-
-        if (tellMeTheWinner.equals(humanPlayer)) {
-            return Integer.MAX_VALUE;
-        } else if (tellMeTheWinner.equals(opp) || tellMeTheWinner.equals(Player.draw)) {
-            return Integer.MIN_VALUE;
-        }
-
         FieldState humanPawn;
         FieldState humanQueen;
         FieldState computerPawn;
